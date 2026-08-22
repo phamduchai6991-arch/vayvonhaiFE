@@ -8,8 +8,6 @@ import {
   X, 
   ArrowRight, 
   AlertCircle, 
-  Sparkles,
-  HelpCircle,
   Mail,
   CheckCircle2,
   RefreshCw
@@ -19,9 +17,6 @@ import {
   loginWithPin, 
   sendPasswordResetOtp, 
   resetPasswordWithOtp,
-  DEFAULT_ADMIN_USERNAME,
-  DEFAULT_ADMIN_PASS,
-  DEFAULT_ADMIN_PIN,
   DEFAULT_ADMIN_EMAIL
 } from '../services/authService';
 
@@ -39,7 +34,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [authMode, setAuthMode] = useState<'password' | 'pin' | 'forgot'>('password');
   
   // Password Mode States
-  const [identifier, setIdentifier] = useState('admin');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -48,7 +43,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [pin, setPin] = useState('');
 
   // Forgot Password States
-  const [resetEmail, setResetEmail] = useState(DEFAULT_ADMIN_EMAIL);
   const [resetOtp, setResetOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -58,7 +52,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showDemoHint, setShowDemoHint] = useState(false);
 
   if (!isOpen) return null;
 
@@ -154,21 +147,11 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
       setTimeout(() => {
         setAuthMode('password');
         setPassword(newPassword);
-        setIdentifier('admin');
         setIsOtpSent(false);
       }, 1500);
     } else {
       setErrorMessage(result.message);
     }
-  };
-
-  const handleQuickFillDefault = () => {
-    setIdentifier('admin');
-    setPassword(DEFAULT_ADMIN_PASS);
-    setPin(DEFAULT_ADMIN_PIN);
-    setErrorMessage(null);
-    setSuccessMessage('Đã điền tài khoản mặc định!');
-    setTimeout(() => setSuccessMessage(null), 2000);
   };
 
   return (
@@ -376,7 +359,7 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
                   />
                 </div>
                 <p className="text-[11px] text-slate-500 text-center">
-                  Mã PIN mặc định cho Anh Đức Hải: <strong className="text-emerald-700 font-mono">6991</strong> (4 số cuối Gmail)
+                  Vui lòng nhập mã PIN bảo mật quản trị viên
                 </p>
               </div>
 
@@ -495,51 +478,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               </button>
             </div>
           )}
-
-          {/* Quick Helper for Admin Duc Hai */}
-          <div className="mt-6 pt-4 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => setShowDemoHint(!showDemoHint)}
-              className="w-full flex items-center justify-between text-[11px] text-slate-500 hover:text-emerald-700 font-semibold cursor-pointer py-1"
-            >
-              <span className="flex items-center gap-1">
-                <HelpCircle className="w-3.5 h-3.5 text-slate-400" />
-                <span>Thông tin tài khoản mặc định (Dành cho Anh Đức Hải)</span>
-              </span>
-              <span>{showDemoHint ? '▲ Thu gọn' : '▼ Xem'}</span>
-            </button>
-
-            {showDemoHint && (
-              <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-[11px] text-slate-600 space-y-1.5 animate-in fade-in">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Tài khoản:</span>
-                  <span className="font-mono font-bold text-slate-900">admin</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Mật khẩu mặc định:</span>
-                  <span className="font-mono font-bold text-emerald-800">duchai@2026</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Mã PIN mở khóa nhanh:</span>
-                  <span className="font-mono font-bold text-amber-700">6991</span>
-                </div>
-                <div className="pt-2 border-t border-slate-200">
-                  <button
-                    type="button"
-                    onClick={handleQuickFillDefault}
-                    className="w-full py-1.5 rounded-lg bg-emerald-100 hover:bg-emerald-200 text-emerald-900 font-bold text-[11px] flex items-center justify-center gap-1 transition-colors cursor-pointer"
-                  >
-                    <Sparkles className="w-3 h-3 text-emerald-700" />
-                    <span>Tự động điền nhanh tài khoản mặc định</span>
-                  </button>
-                  <p className="text-[10px] text-slate-400 text-center mt-1">
-                    * Sau khi đăng nhập, Anh có thể tự đổi mật khẩu riêng trong mục Cài đặt.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
 
         </div>
 
