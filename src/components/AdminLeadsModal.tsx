@@ -4,7 +4,6 @@ import {
   Users, 
   Search, 
   Filter, 
-  Download, 
   Phone, 
   MapPin, 
   Calendar, 
@@ -16,22 +15,17 @@ import {
   RefreshCw,
   ExternalLink,
   MessageSquare,
-  BookOpen,
-  Plus,
   Mail,
   Send,
-  Sparkles,
   Edit2,
   LogOut,
   KeyRound,
   ShieldCheck,
   Lock
 } from 'lucide-react';
-import { Lead, LeadStatus, Article } from '../types';
+import { Lead, LeadStatus } from '../types';
 import { formatVND, formatVNDCompact } from '../utils/loanCalculator';
 import { LOAN_PURPOSES } from '../data/constants';
-import { AdminArticlesTab } from './AdminArticlesTab';
-import { ArticleEditorModal } from './ArticleEditorModal';
 import { 
   getAdminNotificationEmail, 
   setAdminNotificationEmail, 
@@ -52,16 +46,6 @@ interface AdminLeadsModalProps {
   onUpdateLeadStatus: (leadId: string, status: LeadStatus, adminNote?: string) => void;
   onDeleteLead: (leadId: string) => void;
   onResetSampleLeads: () => void;
-  articles: Article[];
-  onSaveArticle: (article: Article) => void;
-  onDeleteArticle: (articleId: string) => void;
-  onToggleFeaturedArticle: (articleId: string) => void;
-  onResetSampleArticles: () => void;
-  onPreviewArticle: (article: Article) => void;
-  defaultTab?: 'leads' | 'articles';
-  onCrawlLiveNews?: () => Promise<void>;
-  isCrawlingNews?: boolean;
-  lastNewsSync?: string;
 }
 
 export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
@@ -72,18 +56,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
   onUpdateLeadStatus,
   onDeleteLead,
   onResetSampleLeads,
-  articles,
-  onSaveArticle,
-  onDeleteArticle,
-  onToggleFeaturedArticle,
-  onResetSampleArticles,
-  onPreviewArticle,
-  defaultTab = 'leads',
-  onCrawlLiveNews,
-  isCrawlingNews = false,
-  lastNewsSync,
 }) => {
-  const [activeTab, setActiveTab] = useState<'leads' | 'articles'>(defaultTab);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
@@ -97,10 +70,6 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
   const [newPin, setNewPin] = useState('');
   const [securityTab, setSecurityTab] = useState<'password' | 'pin'>('password');
   const [securityStatus, setSecurityStatus] = useState<{ msg: string; isError?: boolean } | null>(null);
-
-  // Article Editor Modal State
-  const [isArticleEditorOpen, setIsArticleEditorOpen] = useState(false);
-  const [editingArticle, setEditingArticle] = useState<Article | null>(null);
 
   // Email Notification State
   const [adminEmail, setAdminEmailState] = useState<string>(() => getAdminNotificationEmail());
@@ -289,7 +258,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                   </span>
                 </h3>
                 <p className="text-xs text-emerald-200">
-                  Quản lý khách hàng vay vốn và xuất bản bài viết cẩm nang tin tức
+                  Quản lý khách hàng vay vốn và theo dõi trạng thái tư vấn giải ngân
                 </p>
               </div>
             </div>
@@ -320,28 +289,13 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                 <span className="hidden sm:inline">Đăng Xuất</span>
               </button>
 
-              {activeTab === 'leads' && (
-                <button
-                  onClick={handleExportCSV}
-                  className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <FileSpreadsheet className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Xuất File Excel</span>
-                </button>
-              )}
-
-              {activeTab === 'articles' && (
-                <button
-                  onClick={() => {
-                    setEditingArticle(null);
-                    setIsArticleEditorOpen(true);
-                  }}
-                  className="px-3.5 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Viết Bài Mới</span>
-                </button>
-              )}
+              <button
+                onClick={handleExportCSV}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Xuất File Excel</span>
+              </button>
 
               <button
                 onClick={onClose}
@@ -352,49 +306,8 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
             </div>
           </div>
 
-          {/* Navigation Tabs (Leads vs Articles) */}
-          <div className="bg-slate-900 text-slate-300 px-6 pt-2 flex items-center gap-2 border-b border-slate-800">
-            <button
-              onClick={() => setActiveTab('leads')}
-              className={`px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer border-b-2 ${
-                activeTab === 'leads'
-                  ? 'bg-white text-emerald-950 border-emerald-600 shadow-sm'
-                  : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800/60'
-              }`}
-            >
-              <Users className="w-4 h-4 text-emerald-600" />
-              <span>Khách Hàng Đăng Ký Vay (Leads)</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                activeTab === 'leads' ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-800 text-slate-300'
-              }`}>
-                {leads.length}
-              </span>
-              {newLeadsCount > 0 && (
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title={`${newLeadsCount} lead mới`} />
-              )}
-            </button>
-
-            <button
-              onClick={() => setActiveTab('articles')}
-              className={`px-4 py-2.5 rounded-t-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer border-b-2 ${
-                activeTab === 'articles'
-                  ? 'bg-white text-emerald-950 border-emerald-600 shadow-sm'
-                  : 'text-slate-400 hover:text-white border-transparent hover:bg-slate-800/60'
-              }`}
-            >
-              <BookOpen className="w-4 h-4 text-emerald-600" />
-              <span>Quản Lý Bài Viết &amp; Tin Tức</span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                activeTab === 'articles' ? 'bg-emerald-100 text-emerald-900' : 'bg-slate-800 text-slate-300'
-              }`}>
-                {articles.length}
-              </span>
-            </button>
-          </div>
-
-          {/* TAB 1: LEADS CONTENT */}
-          {activeTab === 'leads' && (
-            <div className="flex-1 flex flex-col overflow-hidden">
+          {/* LEADS CONTENT */}
+          <div className="flex-1 flex flex-col overflow-hidden">
               {/* Stats Metrics Bar */}
               <div className="bg-emerald-50/80 px-6 py-3.5 border-b border-emerald-100 grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-xs">
@@ -775,30 +688,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                   </div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* TAB 2: ARTICLES MANAGEMENT CONTENT */}
-          {activeTab === 'articles' && (
-            <AdminArticlesTab
-              articles={articles}
-              onOpenCreateArticle={() => {
-                setEditingArticle(null);
-                setIsArticleEditorOpen(true);
-              }}
-              onEditArticle={(art) => {
-                setEditingArticle(art);
-                setIsArticleEditorOpen(true);
-              }}
-              onDeleteArticle={onDeleteArticle}
-              onToggleFeatured={onToggleFeaturedArticle}
-              onResetSampleArticles={onResetSampleArticles}
-              onPreviewArticle={onPreviewArticle}
-              onCrawlLiveNews={onCrawlLiveNews}
-              isCrawlingNews={isCrawlingNews}
-              lastNewsSync={lastNewsSync}
-            />
-          )}
+          </div>
 
           {/* Footer Note */}
           <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-500">
@@ -815,21 +705,6 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
           </div>
         </div>
       </div>
-
-      {/* Nested Article Editor Modal (Create or Edit) */}
-      <ArticleEditorModal
-        isOpen={isArticleEditorOpen}
-        onClose={() => {
-          setIsArticleEditorOpen(false);
-          setEditingArticle(null);
-        }}
-        onSaveArticle={(art) => {
-          onSaveArticle(art);
-          setIsArticleEditorOpen(false);
-          setEditingArticle(null);
-        }}
-        editingArticle={editingArticle}
-      />
 
       {/* Security Settings Modal (Change Password & PIN) */}
       {isSecurityModalOpen && (

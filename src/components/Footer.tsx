@@ -84,15 +84,6 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
               </li>
               <li>
                 <button
-                  onClick={() => onNavigateSection('tips-news')}
-                  className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <ChevronRight className="w-3 h-3 text-slate-600" />
-                  <span>Mẹo vặt &amp; Tin tức vay</span>
-                </button>
-              </li>
-              <li>
-                <button
                   onClick={() => onNavigateSection('faq')}
                   className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer"
                 >

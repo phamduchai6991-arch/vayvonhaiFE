@@ -124,13 +124,6 @@ export const Header: React.FC<HeaderProps> = ({
               <span>Gói Vay Ưu Đãi</span>
             </button>
             <button
-              onClick={() => handleNavClick('tips-news')}
-              className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
-            >
-              <FileText className="w-4 h-4 text-emerald-600" />
-              <span>Mẹo Vặt &amp; Tin Tức</span>
-            </button>
-            <button
               onClick={() => handleNavClick('faq')}
               className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
             >
@@ -210,16 +203,6 @@ export const Header: React.FC<HeaderProps> = ({
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </button>
           <button
-            onClick={() => handleNavClick('tips-news')}
-            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-slate-800 font-medium hover:bg-emerald-50 hover:text-emerald-800"
-          >
-            <span className="flex items-center gap-2.5">
-              <FileText className="w-4 h-4 text-emerald-600" />
-              Mẹo Vặt &amp; Cẩm Nang Tài Chính
-            </span>
-            <ChevronRight className="w-4 h-4 text-slate-400" />
-          </button>
-          <button
             onClick={() => handleNavClick('faq')}
             className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-slate-800 font-medium hover:bg-emerald-50 hover:text-emerald-800"
           >
@@ -239,7 +222,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 cursor-pointer"
             >
               <Users className="w-4 h-4 text-emerald-600" />
-              <span>Quản Trị Admin (Leads &amp; Tin Tức)</span>
+              <span>Quản Trị Admin (Quản Lý Leads)</span>
             </button>
             <button
               onClick={() => {
