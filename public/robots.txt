@@ -1,3 +1,20 @@
 User-agent: *
 Allow: /
-Sitemap: https://ais-pre-no44nob3bodv5v52z6aqto-677156550874.asia-east1.run.app/sitemap.xml
+
+# Googlebot & Major Crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+Sitemap: https://vay365.com/sitemap.xml

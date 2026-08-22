@@ -1,31 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://ais-pre-no44nob3bodv5v52z6aqto-677156550874.asia-east1.run.app/</loc>
+    <loc>https://vay365.com/</loc>
     <lastmod>2026-08-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://ais-pre-no44nob3bodv5v52z6aqto-677156550874.asia-east1.run.app/#calculator</loc>
+    <loc>https://vay365.com/#calculator</loc>
     <lastmod>2026-08-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://ais-pre-no44nob3bodv5v52z6aqto-677156550874.asia-east1.run.app/#packages</loc>
+    <loc>https://vay365.com/#lead-form-section</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://vay365.com/#packages</loc>
     <lastmod>2026-08-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ais-pre-no44nob3bodv5v52z6aqto-677156550874.asia-east1.run.app/#articles</loc>
+    <loc>https://vay365.com/#process</loc>
     <lastmod>2026-08-22</lastmod>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://ais-pre-no44nob3bodv5v52z6aqto-677156550874.asia-east1.run.app/#faq</loc>
+    <loc>https://vay365.com/#faq</loc>
     <lastmod>2026-08-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
