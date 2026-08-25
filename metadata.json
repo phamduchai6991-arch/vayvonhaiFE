@@ -1,6 +1,6 @@
 {
   "name": "Đức Hải FE - Tư Vấn Vay & Tính Lãi Suất",
-  "description": "Website tư vấn tài chính Đức Hải FE, hỗ trợ vay tín chấp 3tr - 100tr không thế chấp và công cụ tính lịch trả nợ dư nợ giảm dần chuẩn xác.",
+  "description": "Nền tảng tài chính Vay365 - Hotline 0583.345.345, hỗ trợ vay tín chấp 3tr - 100tr không thế chấp và công cụ tính lịch trả nợ dư nợ giảm dần chuẩn xác.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

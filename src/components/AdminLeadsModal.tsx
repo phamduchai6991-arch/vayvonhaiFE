@@ -80,7 +80,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
   const [resendingLeadId, setResendingLeadId] = useState<string | null>(null);
 
   const handleLogout = () => {
-    if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi trang Quản Trị Đức Hải FE?')) {
+    if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi trang Quản Trị Vay365?')) {
       logout();
       if (onLogout) {
         onLogout();
@@ -138,7 +138,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
     const testLead: Lead = {
       id: `TEST-${Math.floor(1000 + Math.random() * 9000)}`,
       fullName: 'Nguyễn Văn Thử Nghiệm (Test Lead)',
-      phone: '0965234222',
+      phone: '0583345345',
       province: 'Hà Nội',
       loanAmount: 50_000_000,
       loanTenure: 24,
@@ -252,7 +252,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
               </div>
               <div>
                 <h3 className="text-base sm:text-lg font-black tracking-tight flex items-center gap-2">
-                  <span>Trung Tâm Quản Trị Đức Hải FE</span>
+                  <span>Trung Tâm Quản Trị Vay365</span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-400 text-slate-950 font-bold uppercase">
                     Admin Portal
                   </span>

@@ -101,7 +101,7 @@ export function loginWithPassword(
 
   return {
     success: true,
-    message: 'Đăng nhập thành công! Chào mừng Anh Đức Hải.',
+    message: 'Đăng nhập thành công! Chào mừng Quản Trị Viên Vay365.',
   };
 }
 

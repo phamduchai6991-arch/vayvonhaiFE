@@ -209,12 +209,12 @@ export const LOAN_PACKAGES: LoanPackage[] = [
 
 export const FAQ_DATA = [
   {
-    q: 'Hạn mức số tiền vay tín chấp tại Đức Hải FE là bao nhiêu?',
-    a: 'Đức Hải FE hỗ trợ các khoản vay tín chấp linh hoạt từ 3 triệu (3.000.000 đ) đến tối đa 100 triệu (100.000.000 đ). Bạn có thể lựa chọn số tiền phù hợp với nhu cầu và kỳ hạn trả góp từ 6 đến 36 tháng.'
+    q: 'Hạn mức số tiền vay tín chấp tại Vay365 là bao nhiêu?',
+    a: 'Vay365 hỗ trợ các khoản vay tín chấp linh hoạt từ 3 triệu (3.000.000 đ) đến tối đa 100 triệu (100.000.000 đ). Bạn có thể lựa chọn số tiền phù hợp với nhu cầu và kỳ hạn trả góp từ 6 đến 36 tháng.'
   },
   {
-    q: 'Vay tín chấp tại Đức Hải FE có cần tài sản thế chấp hoặc người bảo lãnh không?',
-    a: 'HOÀN TOÀN KHÔNG. Tất cả các gói vay tại Đức Hải FE đều là Vay Tín Chấp 100% không cần thế chấp sổ đỏ, nhà đất hay xe cộ. Bạn chỉ cần chứng minh thu nhập hoặc có CCCD gắn chip hợp lệ.'
+    q: 'Vay tín chấp tại Vay365 có cần tài sản thế chấp hoặc người bảo lãnh không?',
+    a: 'HOÀN TOÀN KHÔNG. Tất cả các gói vay tại Vay365 đều là Vay Tín Chấp 100% không cần thế chấp sổ đỏ, nhà đất hay xe cộ. Bạn chỉ cần chứng minh thu nhập hoặc có CCCD gắn chip hợp lệ.'
   },
   {
     q: 'Thời hạn vay tín chấp tối thiểu và tối đa là bao lâu?',
@@ -222,15 +222,15 @@ export const FAQ_DATA = [
   },
   {
     q: 'Tôi bị nợ xấu hoặc nợ chú ý nhóm 2 thì có thể đăng ký vay tín chấp được không?',
-    a: 'Đức Hải FE có các giải pháp tài chính linh hoạt. Tùy thuộc vào thời điểm phát sinh nợ quá hạn và việc bạn đã tất toán hay chưa, chuyên viên tư vấn sẽ hỗ trợ tìm phương án khả thi nhất.'
+    a: 'Vay365 có các giải pháp tài chính linh hoạt. Tùy thuộc vào thời điểm phát sinh nợ quá hạn và việc bạn đã tất toán hay chưa, chuyên viên tư vấn sẽ hỗ trợ tìm phương án khả thi nhất.'
   },
   {
     q: 'Sau khi gửi thông tin đăng ký vay tín chấp, bao lâu tôi sẽ nhận được tư vấn?',
     a: 'Bạn sẽ nhận được cuộc gọi tư vấn miễn phí từ chuyên viên trong vòng 15 - 30 phút (từ 8h00 - 21h00 tất cả các ngày trong tuần).'
   },
   {
-    q: 'Đức Hải FE có thu phí tư vấn hay phí thẩm định trước khi giải ngân không?',
-    a: 'TUYỆT ĐỐI KHÔNG! Dịch vụ tư vấn, lập bảng tính lãi suất và hỗ trợ hồ sơ tại Đức Hải FE hoàn toàn MIỄN PHÍ 100%. Chúng tôi không bao giờ thu tiền cọc hay bất kỳ phụ phí nào.'
+    q: 'Vay365 có thu phí tư vấn hay phí thẩm định trước khi giải ngân không?',
+    a: 'TUYỆT ĐỐI KHÔNG! Dịch vụ tư vấn, lập bảng tính lãi suất và hỗ trợ hồ sơ tại Vay365 hoàn toàn MIỄN PHÍ 100%. Chúng tôi không bao giờ thu tiền cọc hay bất kỳ phụ phí nào.'
   }
 ];
 

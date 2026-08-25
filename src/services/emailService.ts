@@ -62,7 +62,7 @@ export async function sendLeadEmailNotification(lead: Lead): Promise<EmailSendRe
   // 2. Client-side Cloud Relay Fallback (Formsubmit / Webhook relay to guarantee delivery to phamduchai6991@gmail.com)
   try {
     const formData = new FormData();
-    formData.append('_subject', `🔥 [ĐỨC HẢI FE] Khách mới: ${lead.fullName} (${lead.phone}) - Vay ${new Intl.NumberFormat('vi-VN').format(lead.loanAmount)}đ`);
+    formData.append('_subject', `🔥 [VAY365] Khách mới: ${lead.fullName} (${lead.phone}) - Vay ${new Intl.NumberFormat('vi-VN').format(lead.loanAmount)}đ`);
     formData.append('_replyto', targetEmail);
     formData.append('_captcha', 'false');
     formData.append('_template', 'table');
@@ -110,9 +110,9 @@ export async function sendLeadEmailNotification(lead: Lead): Promise<EmailSendRe
  * Generate a mailto: URL with full lead details so Admin can open Gmail with 1 click
  */
 export function generateLeadMailtoUrl(lead: Lead, recipient: string = DEFAULT_ADMIN_EMAIL): string {
-  const subject = encodeURIComponent(`[Đức Hải FE] Hồ sơ vay tín chấp: ${lead.fullName} - ${lead.phone}`);
+  const subject = encodeURIComponent(`[Vay365] Hồ sơ vay tín chấp: ${lead.fullName} - ${lead.phone}`);
   const body = encodeURIComponent(
-`Kính gửi Anh Đức Hải,
+`Kính gửi Ban Quản Trị Vay365,
 
 Hệ thống vừa ghi nhận hồ sơ đăng ký vay tín chấp mới:
 
@@ -129,7 +129,7 @@ Hệ thống vừa ghi nhận hồ sơ đăng ký vay tín chấp mới:
 - Mã hồ sơ: ${lead.id}
 
 ---
-Đức Hải FE - Tư Vấn Vay Tín Chấp & Lãi Suất Dư Nợ Giảm Dần`
+Vay365 - Tư Vấn Vay Tín Chấp & Lãi Suất Dư Nợ Giảm Dần`
   );
 
   return `mailto:${recipient}?subject=${subject}&body=${body}`;

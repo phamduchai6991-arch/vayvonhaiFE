@@ -52,7 +52,7 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({
 
       {/* Zalo Chat Floating Action */}
       <a
-        href="https://zalo.me/0965234222"
+        href="https://zalo.me/0583345345"
         target="_blank"
         rel="noreferrer"
         className="w-12 h-12 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-xl shadow-emerald-600/30 transition-transform hover:scale-110 group relative"
@@ -66,14 +66,14 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({
 
       {/* Hotline Call Floating Action with pulse animation */}
       <a
-        href="tel:0965234222"
+        href="tel:0583345345"
         className="relative flex items-center justify-center w-13 h-13 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-xl shadow-rose-500/40 hover:scale-110 transition-transform group"
-        title="Gọi Hotline 0965 234 222"
+        title="Gọi Hotline 0583.345.345"
       >
         <span className="absolute -inset-1 rounded-full bg-rose-500/40 animate-ping" />
         <PhoneCall className="w-6 h-6 animate-pulse relative z-10" />
         <span className="absolute right-full mr-2 bg-slate-900 text-white text-[11px] font-semibold py-1 px-2.5 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none shadow-md">
-          Hotline: 0965 234 222 (Tư vấn 24/7)
+          Hotline: 0583.345.345 (Tư vấn 24/7)
         </span>
       </a>
 

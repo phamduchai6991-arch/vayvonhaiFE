@@ -29,14 +29,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
               <div className="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white shadow-md">
                 <Calculator className="w-5 h-5" />
               </div>
-              <div className="flex items-center gap-1">
-                <span className="text-2xl font-black text-white">Đức Hải</span>
-                <span className="text-2xl font-black text-emerald-400">FE</span>
+              <div className="flex items-center gap-0.5">
+                <span className="text-2xl font-black text-white">Vay</span>
+                <span className="text-2xl font-black text-emerald-400">365</span>
               </div>
             </div>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Dịch vụ tư vấn tài chính chuyên nghiệp Đức Hải FE, cung cấp công cụ tính lãi suất dư nợ giảm dần chuẩn xác và hỗ trợ kết nối khách hàng vay tín chấp nhanh chóng, an toàn, bảo mật.
+              Dịch vụ tư vấn tài chính chuyên nghiệp Vay365, cung cấp công cụ tính lãi suất dư nợ giảm dần chuẩn xác và hỗ trợ kết nối khách hàng vay tín chấp nhanh chóng, an toàn, bảo mật.
             </p>
 
             <div className="pt-2 text-xs space-y-1.5 text-slate-400">
@@ -129,7 +129,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
               <div className="flex items-start gap-2">
                 <PhoneCall className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <div>
-                  <div className="text-slate-200 font-bold text-sm">0965 234 222 (Tư vấn 24/7)</div>
+                  <div className="text-slate-200 font-bold text-sm">0583.345.345 (Tư vấn 24/7)</div>
                   <div className="text-[11px] text-slate-500">Giờ làm việc: 8h00 - 21h00 hàng ngày</div>
                 </div>
               </div>
@@ -160,7 +160,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
         {/* Bottom Bar: Disclaimer & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
           <p>
-            © {new Date().getFullYear()} Đức Hải FE. Mọi quyền được bảo lưu. Tư vấn vay tín chấp &amp; tính lãi suất chính xác.
+            © {new Date().getFullYear()} Vay365. Mọi quyền được bảo lưu. Tư vấn vay tín chấp &amp; tính lãi suất chính xác.
           </p>
 
           <p className="flex items-center gap-1">

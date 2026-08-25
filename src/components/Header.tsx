@@ -57,11 +57,11 @@ export const Header: React.FC<HeaderProps> = ({
 
           <div className="flex items-center gap-3 sm:gap-4 text-xs">
             <a 
-              href="tel:0965234222" 
+              href="tel:0583345345" 
               className="flex items-center gap-1.5 font-semibold text-white hover:text-amber-300 transition-colors"
             >
               <PhoneCall className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
-              <span>Hotline 24/7: <strong>0965 234 222</strong></span>
+              <span>Hotline 24/7: <strong>0583.345.345</strong></span>
             </a>
             
             <button
@@ -71,10 +71,10 @@ export const Header: React.FC<HeaderProps> = ({
                   ? 'bg-emerald-900/90 text-emerald-200 border-emerald-500/50 hover:bg-emerald-900 hover:text-white'
                   : 'bg-white/15 hover:bg-white/25 text-white border-white/20'
               }`}
-              title={isLoggedIn ? "Mở Trung Tâm Quản Trị" : "Đăng nhập Cổng Quản Trị Viên Đức Hải FE"}
+              title={isLoggedIn ? "Mở Trung Tâm Quản Trị" : "Đăng nhập Cổng Quản Trị Viên Vay365"}
             >
               <Users className="w-3.5 h-3.5 text-emerald-200" />
-              <span>{isLoggedIn ? 'Admin Đức Hải' : '🔒 Quản Trị (Admin)'}</span>
+              <span>{isLoggedIn ? 'Admin Vay365' : '🔒 Quản Trị (Admin)'}</span>
               {isLoggedIn && newLeadsCount > 0 && (
                 <span className="bg-amber-400 text-emerald-950 font-bold px-1.5 py-0.2 rounded-full text-[10px]">
                   {newLeadsCount} mới
@@ -97,9 +97,9 @@ export const Header: React.FC<HeaderProps> = ({
               <Calculator className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-2xl font-black tracking-tight text-emerald-950">Đức Hải</span>
-                <span className="text-2xl font-black tracking-tight text-emerald-600">FE</span>
+              <div className="flex items-center gap-0.5">
+                <span className="text-2xl font-black tracking-tight text-emerald-950">Vay</span>
+                <span className="text-2xl font-black tracking-tight text-emerald-600">365</span>
               </div>
               <p className="text-[11px] font-semibold text-slate-500 tracking-wider uppercase">
                 Tư Vấn Vay & Tính Lãi Suất

@@ -74,10 +74,10 @@ export const FAQSection: React.FC = () => {
             </div>
           </div>
           <a
-            href="tel:0965234222"
+            href="tel:0583345345"
             className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm whitespace-nowrap shadow-sm shadow-emerald-600/20 cursor-pointer"
           >
-            Gọi Chuyên Viên 0965 234 222
+            Gọi Chuyên Viên 0583.345.345
           </a>
         </div>
 

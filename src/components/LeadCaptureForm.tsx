@@ -241,10 +241,10 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
             <div className="p-4 rounded-xl bg-gradient-to-r from-emerald-800 to-teal-700 text-white flex items-center justify-between shadow-md">
               <div>
                 <div className="text-xs text-emerald-100 font-medium">Cần vay gấp trong ngày?</div>
-                <div className="text-base sm:text-lg font-black text-amber-300">Hotline: 0965 234 222</div>
+                <div className="text-base sm:text-lg font-black text-amber-300">Hotline: 0583.345.345</div>
               </div>
               <a
-                href="tel:0965234222"
+                href="tel:0583345345"
                 className="px-3.5 py-2 rounded-lg bg-white text-emerald-950 text-xs font-bold hover:bg-amber-300 transition-colors"
               >
                 Gọi Ngay
@@ -316,7 +316,7 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
                       Đăng ký hồ sơ khác
                     </button>
                     <a
-                      href="tel:0965234222"
+                      href="tel:0583345345"
                       className="px-6 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-md cursor-pointer"
                     >
                       Gọi Hotline Tư Vấn Ngay
