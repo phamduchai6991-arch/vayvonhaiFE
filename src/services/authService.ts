@@ -1,4 +1,6 @@
 // src/services/authService.ts
+import { recordAdminLogin } from './analyticsService';
+
 export interface AdminUser {
   username: string;
   email: string;
@@ -99,6 +101,9 @@ export function loginWithPassword(
     localStorage.setItem(AUTH_SESSION_KEY, str);
   }
 
+  // Record admin login in analytics
+  recordAdminLogin('password', 'admin');
+
   return {
     success: true,
     message: 'Đăng nhập thành công! Chào mừng Quản Trị Viên Vay365.',
@@ -129,6 +134,9 @@ export function loginWithPin(pinInput: string, rememberMe: boolean = false): { s
   if (rememberMe) {
     localStorage.setItem(AUTH_SESSION_KEY, str);
   }
+
+  // Record admin login in analytics
+  recordAdminLogin('pin', 'admin');
 
   return {
     success: true,

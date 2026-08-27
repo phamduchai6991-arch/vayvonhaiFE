@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { CalculationMethod } from '../types';
 import { calculateReducingSchedule, calculateFlatSchedule, formatVND, formatVNDCompact } from '../utils/loanCalculator';
+import { recordCalculationRun } from '../services/analyticsService';
 
 interface LoanCalculatorProps {
   onApplyLoan: (amount: number, termMonths: number, method: CalculationMethod) => void;
@@ -476,7 +477,10 @@ export const LoanCalculator: React.FC<LoanCalculatorProps> = ({ onApplyLoan }) =
 
               {/* CTA Button to Form */}
               <button
-                onClick={() => onApplyLoan(amount, termMonths, method)}
+                onClick={() => {
+                  recordCalculationRun();
+                  onApplyLoan(amount, termMonths, method);
+                }}
                 className="mt-6 w-full py-3.5 px-5 rounded-xl bg-amber-400 hover:bg-amber-300 text-emerald-950 font-black text-sm sm:text-base shadow-lg shadow-amber-400/25 transition-all flex items-center justify-center gap-2 group cursor-pointer"
               >
                 <span>Đăng Ký Vay Tín Chấp Với Thông Số Này</span>

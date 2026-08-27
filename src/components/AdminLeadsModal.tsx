@@ -21,11 +21,14 @@ import {
   LogOut,
   KeyRound,
   ShieldCheck,
-  Lock
+  Lock,
+  Activity,
+  BarChart3
 } from 'lucide-react';
 import { Lead, LeadStatus } from '../types';
 import { formatVND, formatVNDCompact } from '../utils/loanCalculator';
 import { LOAN_PURPOSES } from '../data/constants';
+import { AdminAnalyticsTab } from './AdminAnalyticsTab';
 import { 
   getAdminNotificationEmail, 
   setAdminNotificationEmail, 
@@ -61,6 +64,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [adminNoteInput, setAdminNoteInput] = useState('');
+  const [activeAdminTab, setActiveAdminTab] = useState<'leads' | 'analytics'>('leads');
 
   // Password & Security Management Modal
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false);
@@ -306,8 +310,49 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
             </div>
           </div>
 
-          {/* LEADS CONTENT */}
-          <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Primary Top Navigation Tabs */}
+          <div className="bg-emerald-950/95 border-b border-emerald-800 px-6 py-2 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveAdminTab('leads')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeAdminTab === 'leads'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-emerald-200 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              <span>Hồ Sơ Khách Vay ({leads.length})</span>
+              {newLeadsCount > 0 && (
+                <span className="px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px]">
+                  {newLeadsCount} mới
+                </span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveAdminTab('analytics')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeAdminTab === 'analytics'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-emerald-200 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Activity className="w-4 h-4 text-amber-300" />
+              <span>Thống Kê Hiệu Suất &amp; Đếm Lượt Login</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-teal-500/30 text-teal-200 text-[10px] font-semibold">
+                Mới
+              </span>
+            </button>
+          </div>
+
+          {/* ANALYTICS TAB CONTENT */}
+          {activeAdminTab === 'analytics' ? (
+            <AdminAnalyticsTab leadsCount={leads.length} />
+          ) : (
+            /* LEADS CONTENT */
+            <div className="flex-1 flex flex-col overflow-hidden">
               {/* Stats Metrics Bar */}
               <div className="bg-emerald-50/80 px-6 py-3.5 border-b border-emerald-100 grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-xs">
@@ -688,7 +733,8 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                   </div>
                 </div>
               )}
-          </div>
+            </div>
+          )}
 
           {/* Footer Note */}
           <div className="bg-slate-50 px-6 py-3 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-500">

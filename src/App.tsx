@@ -6,6 +6,7 @@ import { LeadCaptureForm } from './components/LeadCaptureForm';
 import { LoanPackages } from './components/LoanPackages';
 import { ProcessSteps } from './components/ProcessSteps';
 import { FAQSection } from './components/FAQSection';
+import { SEOGuideSection } from './components/SEOGuideSection';
 import { AdminLeadsModal } from './components/AdminLeadsModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { Footer } from './components/Footer';
@@ -13,6 +14,7 @@ import { FloatingActions } from './components/FloatingActions';
 import { CalculationMethod, Lead, LeadStatus, LoanPackage, LoanPurpose } from './types';
 import { INITIAL_LEADS } from './data/constants';
 import { isAuthenticated, logout } from './services/authService';
+import { recordPageView, recordLeadSubmission } from './services/analyticsService';
 
 const LEADS_STORAGE_KEY = 'duchai_fe_customer_leads';
 
@@ -42,6 +44,11 @@ export default function App() {
       // Ignore quota errors
     }
   }, [leads]);
+
+  // Record pageview & unique visitor for SEO & performance measurement
+  useEffect(() => {
+    recordPageView();
+  }, []);
 
   // Admin portal entry handler - gated by auth check
   const handleOpenAdminPortal = () => {
@@ -99,6 +106,7 @@ export default function App() {
 
   // Handle new lead submission
   const handleNewLeadSubmit = (newLead: Lead) => {
+    recordLeadSubmission();
     setLeads((prev) => [newLead, ...prev]);
   };
 
@@ -167,10 +175,13 @@ export default function App() {
         {/* 5. Loan Packages Showcase */}
         <LoanPackages onSelectPackage={handleSelectPackage} />
 
-        {/* 6. 4-Step Loan Process */}
+        {/* 6. Comprehensive Financial Knowledge & SEO Guide */}
+        <SEOGuideSection />
+
+        {/* 7. 4-Step Loan Process */}
         <ProcessSteps />
 
-        {/* 7. FAQ Section */}
+        {/* 8. FAQ Section */}
         <FAQSection />
 
       </main>
