@@ -98,13 +98,29 @@ export default function App() {
   const [formPrefillTerm, setFormPrefillTerm] = useState<number>(24);
   const [formPrefillPurpose, setFormPrefillPurpose] = useState<LoanPurpose>('tin_chap_tieu_dung');
 
-  // Navigation smoothly to a section
+  // Navigation smoothly to a section with sticky header offset
   const scrollToSection = (sectionId: string) => {
+    if (sectionId === 'hero' || sectionId === 'top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     const el = document.getElementById(sectionId);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    } else if (sectionId === 'hero') {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      const headerOffset = 70;
+      const elementPosition = el.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+
+      // Automatically focus the input field in lead form after scrolling
+      if (sectionId === 'lead-form-section') {
+        setTimeout(() => {
+          const nameInput = el.querySelector('input') as HTMLInputElement | null;
+          if (nameInput) nameInput.focus();
+        }, 500);
+      }
     }
   };
 
@@ -182,19 +198,20 @@ export default function App() {
       {/* 1. Header with navigation, live lead counter, and admin trigger */}
       <Header
         onOpenCalculator={() => scrollToSection('calculator')}
-        onOpenForm={() => scrollToSection('lead-form-section')}
-        onOpenPackages={() => scrollToSection('packages')}
-        onOpenProcess={() => scrollToSection('process')}
-        onOpenFAQ={() => scrollToSection('faq')}
+        onOpenLeadForm={() => scrollToSection('lead-form-section')}
         onOpenAdminLeads={handleOpenAdminPortal}
-        leadsCount={newLeadsCount}
+        onNavigateSection={scrollToSection}
+        leadsCount={leads.length}
+        newLeadsCount={newLeadsCount}
+        isLoggedIn={isLoggedIn}
+        onLogout={handleAdminLogout}
       />
 
       <main className="flex-1">
         {/* 2. Hero Section */}
         <HeroSection
-          onApplyClick={() => scrollToSection('lead-form-section')}
-          onCalculateClick={() => scrollToSection('calculator')}
+          onScrollToForm={() => scrollToSection('lead-form-section')}
+          onScrollToCalculator={() => scrollToSection('calculator')}
         />
 
         {/* 3. Interactive Loan Calculator */}

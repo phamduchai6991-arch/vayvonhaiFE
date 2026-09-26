@@ -458,12 +458,34 @@ app.get('/api/leads', (req, res) => {
 });
 
 // 3. Create new lead (Saves permanently to server + Sends Email with AWAIT)
+const recentServerSubmissions = new Map<string, number>();
+
 app.post('/api/leads', async (req, res) => {
   const leadData = req.body.lead || req.body;
 
   if (!leadData || !leadData.fullName || !leadData.phone) {
     return res.status(400).json({ success: false, message: 'Dữ liệu khách hàng không hợp lệ' });
   }
+
+  const cleanPhone = String(leadData.phone || '').replace(/\D/g, '');
+  const vnPhoneRegex = /^(03|05|07|08|09)\d{8}$/;
+  if (!vnPhoneRegex.test(cleanPhone)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Số điện thoại không hợp lệ theo chuẩn viễn thông Việt Nam (10 số, đầu 03, 05, 07, 08, 09)'
+    });
+  }
+
+  const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  const now = Date.now();
+  const phoneKey = `phone:${cleanPhone}`;
+  if (recentServerSubmissions.has(phoneKey) && now - recentServerSubmissions.get(phoneKey)! < 3 * 60 * 1000) {
+    return res.status(429).json({
+      success: false,
+      message: 'Hệ thống đã nhận được yêu cầu của bạn, vui lòng không gửi lại liên tục.'
+    });
+  }
+  recentServerSubmissions.set(phoneKey, now);
 
   const leads = getStoredLeads();
   const config = getStoredConfig();
