@@ -55,8 +55,45 @@ const INITIAL_LEADS = [
   }
 ];
 
+// Bộ nhớ đệm chống Spam & chặn Flood request
+const recentSubmissions = new Map<string, number>();
+
+function isSpamOrFlooding(phone: string, ip: string): boolean {
+  const now = Date.now();
+  
+  // Dọn dẹp các mục cũ quá 5 phút
+  for (const [key, timestamp] of recentSubmissions.entries()) {
+    if (now - timestamp > 5 * 60 * 1000) {
+      recentSubmissions.delete(key);
+    }
+  }
+
+  // 1. Chặn gửi trùng số điện thoại trong vòng 3 phút
+  const phoneKey = `phone:${phone}`;
+  if (recentSubmissions.has(phoneKey)) {
+    const lastTime = recentSubmissions.get(phoneKey)!;
+    if (now - lastTime < 3 * 60 * 1000) {
+      return true;
+    }
+  }
+
+  // 2. Chặn cùng 1 IP gửi dồn dập (tối thiểu 15 giây mới được gửi 1 lần)
+  if (ip && ip !== 'unknown') {
+    const ipKey = `ip:${ip}`;
+    if (recentSubmissions.has(ipKey)) {
+      const lastTime = recentSubmissions.get(ipKey)!;
+      if (now - lastTime < 15 * 1000) {
+        return true;
+      }
+    }
+    recentSubmissions.set(ipKey, now);
+  }
+
+  recentSubmissions.set(phoneKey, now);
+  return false;
+}
+
 export default async function handler(req: any, res: any) {
-  // Cấu hình CORS để frontend gọi không bị chặn
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -80,7 +117,7 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  // 2. GET leads - Xem danh sách khách hàng
+  // 2. GET leads - Danh sách khách hàng
   if (req.method === 'GET') {
     return res.status(200).json({
       success: true,
@@ -89,7 +126,7 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  // 3. POST new lead - Khi khách gửi form đăng ký vay
+  // 3. POST new lead - Khi khách gửi đơn
   if (req.method === 'POST') {
     let leadData = req.body?.lead || req.body;
     if (typeof leadData === 'string') {
@@ -100,6 +137,27 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ success: false, message: 'Dữ liệu khách hàng không hợp lệ' });
     }
 
+    const cleanPhone = String(leadData.phone || '').replace(/\D/g, '');
+    
+    // Kiểm tra số điện thoại chuẩn Việt Nam (10 số, đầu 03, 05, 07, 08, 09)
+    const vnPhoneRegex = /^(03|05|07|08|09)\d{8}$/;
+    if (!vnPhoneRegex.test(cleanPhone)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Số điện thoại không hợp lệ theo chuẩn viễn thông Việt Nam' 
+      });
+    }
+
+    const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+    
+    // Kiểm tra chặn Spam / Flood
+    if (isSpamOrFlooding(cleanPhone, String(clientIp))) {
+      return res.status(429).json({
+        success: false,
+        message: 'Hệ thống đã nhận được yêu cầu, vui lòng không gửi lại liên tục.'
+      });
+    }
+
     const newLead = {
       ...leadData,
       id: leadData.id || `LEAD-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -107,10 +165,7 @@ export default async function handler(req: any, res: any) {
       status: 'new',
     };
 
-    // Tự động bắn email thông báo về phamduchai6991@gmail.com
-    const cleanPhone = String(newLead.phone || '').replace(/\s+/g, '');
     const formattedAmount = new Intl.NumberFormat('vi-VN').format(newLead.loanAmount || 0);
-
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
 
@@ -127,7 +182,23 @@ export default async function handler(req: any, res: any) {
           from: `"Vay365 Thông Báo" <${smtpUser}>`,
           to: DEFAULT_ADMIN_EMAIL,
           subject: `🔥 [Vay365] Khách mới: ${newLead.fullName} (${cleanPhone}) - ${formattedAmount}đ`,
-          html: `<p>Khách hàng: <strong>${newLead.fullName}</strong> (${cleanPhone}) vừa đăng ký khoản vay <strong>${formattedAmount} đ</strong> kỳ hạn ${newLead.loanTenure} tháng.</p>`
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+              <h2 style="color: #065f46; margin-top: 0; font-size: 18px;">🔥 HỒ SƠ ĐĂNG KÝ VAY TÍN CHẤP MỚI</h2>
+              <table style="width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 14px;">
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; width: 140px; color: #475569;">Họ và tên:</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #0f172a;">${newLead.fullName}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #475569;">Số điện thoại:</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;"><a href="tel:${cleanPhone}" style="color: #059669; font-weight: bold; text-decoration: none;">📞 ${cleanPhone}</a></td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #475569;">Số tiền vay:</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; color: #059669; font-weight: bold;">${formattedAmount} VNĐ</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #475569;">Kỳ hạn vay:</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${newLead.loanTenure || 24} tháng</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #475569;">Tỉnh/Thành:</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${newLead.province || 'Chưa cung cấp'}</td></tr>
+                <tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; font-weight: bold; color: #475569;">Thời gian gửi:</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${newLead.createdAt}</td></tr>
+              </table>
+              <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <a href="tel:${cleanPhone}" style="display: inline-block; padding: 10px 18px; background: #059669; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px;">📞 Gọi Khách Ngay</a>
+                <a href="https://zalo.me/${cleanPhone}" style="display: inline-block; padding: 10px 18px; background: #0284c7; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 13px;">💬 Nhắn Zalo</a>
+              </div>
+            </div>
+          `
         });
       } catch (e) {
         console.error('SMTP Error:', e);
