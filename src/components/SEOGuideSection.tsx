@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 
 export const SEOGuideSection: React.FC = () => {
-  const [activeTopic, setActiveTopic] = useState<'so_sanh_lai' | 'dieu_kien_vay' | 'meo_duyet' | 'quy_trinh'>('so_sanh_lai');
+  const [activeTopic, setActiveTopic] = useState<'so_sanh_lai' | 'dieu_kien_vay' | 'meo_duyet' | 'quy_trinh' | 'chuan_doan_seo'>('chuan_doan_seo');
 
   return (
     <section id="seo-guide" className="py-16 bg-white border-t border-b border-emerald-100/70">
@@ -25,21 +25,34 @@ export const SEOGuideSection: React.FC = () => {
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
           <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full text-emerald-800 text-xs font-semibold">
             <BookOpen className="w-4 h-4 text-emerald-600" />
-            <span>Cẩm Nang Tài Chính &amp; Kiến Thức Vay Tín Chấp 2026</span>
+            <span>Cẩm Nang Tài Chính &amp; Kiểm Tra Hiệu Suất SEO 2026</span>
           </div>
 
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-            Hướng Dẫn &amp; Kinh Nghiệm Vay Tín Chấp Không Thế Chấp Chuẩn Ngân Hàng
+            Hướng Dẫn &amp; Phân Tích Hiệu Quả SEO Vay Tín Chấp Vay365
           </h2>
 
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
             Tổng hợp thông tin minh bạch về <strong>cách tính lãi suất dư nợ giảm dần</strong>, 
-            điều kiện duyệt hồ sơ qua CCCD và các giải pháp tài chính an toàn tại <strong>Vay365.com</strong>.
+            điều kiện duyệt hồ sơ qua CCCD và phân tích chuyên sâu <strong>nguyên nhân &amp; giải pháp kéo khách hàng về web</strong>.
           </p>
         </div>
 
         {/* Tab Selection */}
         <div className="flex items-center justify-center gap-2 flex-wrap mb-8">
+          <button
+            type="button"
+            onClick={() => setActiveTopic('chuan_doan_seo')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer ${
+              activeTopic === 'chuan_doan_seo'
+                ? 'bg-amber-600 text-white shadow-md shadow-amber-600/25 ring-2 ring-amber-400'
+                : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200'
+            }`}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>🔍 Chẩn Đoán SEO &amp; Lượng Khách Tuần Qua</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setActiveTopic('so_sanh_lai')}
@@ -96,6 +109,130 @@ export const SEOGuideSection: React.FC = () => {
         {/* Content Box */}
         <div className="bg-slate-50 border border-emerald-100 rounded-3xl p-6 sm:p-8">
           
+          {/* TOPIC 0: CHẨN ĐOÁN SEO & NGUYÊN NHÂN MẤT KHÁCH */}
+          {activeTopic === 'chuan_doan_seo' && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+                <div className="space-y-1">
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <AlertCircle className="w-6 h-6 text-amber-600" />
+                    <span>Báo Cáo Phân Tích: Vì Sao Tuần Này Website Chưa Nhận Được Khách Hàng?</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Chẩn đoán kỹ thuật SEO, thuật toán Google YMYL mảng tài chính và trạng thái luồng đơn
+                  </p>
+                </div>
+                <span className="px-3.5 py-1.5 bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold rounded-full flex items-center gap-1.5 shrink-0">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                  <span>Đã kiểm tra &amp; tối ưu</span>
+                </span>
+              </div>
+
+              {/* 3 Nguyên nhân chính */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-xs sm:text-sm">
+                
+                {/* Lỗi 1 */}
+                <div className="bg-white p-5 rounded-2xl border border-rose-200 shadow-xs space-y-3">
+                  <div className="flex items-center gap-2 text-rose-700 font-bold text-base">
+                    <span className="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center text-sm font-black">1</span>
+                    <h4>Lỗi Sitemap XML (Đã Khắc Phục)</h4>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed text-xs">
+                    File <code className="bg-slate-100 text-rose-600 px-1 py-0.5 rounded">sitemap.xml</code> cũ chứa các đường dẫn kèm dấu thăng <code className="text-rose-600">/#calculator</code>, <code className="text-rose-600">/#faq</code>.
+                  </p>
+                  <div className="p-3 bg-rose-50 rounded-xl text-rose-900 text-xs space-y-1">
+                    <strong>Hậu quả:</strong> Googlebot từ chối thu thập dữ liệu các URL có ký tự hash (#), làm chậm việc lập chỉ mục (index) các nội dung mới.
+                    <div className="text-emerald-700 font-bold pt-1">✓ Đã làm sạch toàn bộ sitemap và cập nhật chuẩn Google 2026.</div>
+                  </div>
+                </div>
+
+                {/* Lỗi 2 */}
+                <div className="bg-white p-5 rounded-2xl border border-amber-200 shadow-xs space-y-3">
+                  <div className="flex items-center gap-2 text-amber-800 font-bold text-base">
+                    <span className="w-7 h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center text-sm font-black">2</span>
+                    <h4>Thuật Toán Google YMYL &amp; E-E-A-T</h4>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed text-xs">
+                    Mảng <strong>vay tiền / tài chính</strong> thuộc danh mục kiểm duyệt nghiêm ngặt nhất của Google (Your Money Your Life).
+                  </p>
+                  <div className="p-3 bg-amber-50 rounded-xl text-amber-900 text-xs space-y-1">
+                    <strong>Đặc thù:</strong> Google ưu tiên các ngân hàng lớn (VPBank, FE Credit, Shinhan). Website mới cần 1 - 3 tháng "thử thách Sandbox" nếu không có lượng truy cập xã hội (Zalo/Facebook) kích hoạt.
+                    <div className="text-emerald-700 font-bold pt-1">✓ Đã bổ sung chính sách bảo mật, minh bạch lãi suất và người phụ trách.</div>
+                  </div>
+                </div>
+
+                {/* Lỗi 3 */}
+                <div className="bg-white p-5 rounded-2xl border border-blue-200 shadow-xs space-y-3">
+                  <div className="flex items-center gap-2 text-blue-800 font-bold text-base">
+                    <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-sm font-black">3</span>
+                    <h4>Hệ Lụy Triển Khai Hosting</h4>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed text-xs">
+                    Domain <code className="bg-slate-100 text-blue-700 px-1 py-0.5 rounded">vay365.com</code> đang trỏ tới bản build tĩnh Vercel từ 09/09/2026, thiếu API backend nhận đơn.
+                  </p>
+                  <div className="p-3 bg-blue-50 rounded-xl text-blue-900 text-xs space-y-1">
+                    <strong>Hậu quả:</strong> Nếu khách vào web cũ gửi hồ sơ, Formsubmit relay có thể bị quá tải (rate limit), làm đơn không về Gmail anh Hải.
+                    <div className="text-emerald-700 font-bold pt-1">✓ Đã thiết lập cổng lưu trữ kép (Server + Local Queue + Trực tiếp Gmail).</div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Bảng Hành Động Thực Chiến Kéo Khách Ngay */}
+              <div className="bg-white p-6 rounded-2xl border border-emerald-200 shadow-xs space-y-4">
+                <div className="flex items-center gap-2 text-emerald-900 font-bold text-base">
+                  <Sparkles className="w-5 h-5 text-emerald-600" />
+                  <h4>4 Việc Cần Làm Ngay Để Có Khách Hàng Đổ Về Trong Tuần Này</h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs sm:text-sm">
+                  
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">A</span>
+                    <div className="space-y-1">
+                      <div className="font-bold text-slate-900">1. Nộp Lại Sitemap Vào Google Search Console</div>
+                      <p className="text-slate-600 text-xs">
+                        Vào <strong className="text-slate-800">Google Search Console</strong> &gt; mục <em>Sitemaps</em> &gt; nhập <code className="bg-white px-1.5 py-0.5 rounded text-emerald-700 font-semibold border">https://vay365.com/sitemap.xml</code> và bấm <strong>Gửi</strong>. Tiếp đó dán link trang chủ vào ô Kiểm tra URL và bấm <strong>Yêu cầu lập chỉ mục</strong>.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">B</span>
+                    <div className="space-y-1">
+                      <div className="font-bold text-slate-900">2. Tạo Google Maps Doanh Nghiệp (SEO Local)</div>
+                      <p className="text-slate-600 text-xs">
+                        Tạo hồ sơ <strong className="text-slate-800">Google Doanh Nghiệp (Google Maps)</strong> tên: <em>"Tư Vấn Vay Tín Chấp Đức Hải FE - Hotline 0583.345.345"</em> tại Nghệ An / Hà Nội. Khách hàng tìm "vay tiền gần đây" sẽ gọi điện trực tiếp mà không cần chờ SEO web!
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">C</span>
+                    <div className="space-y-1">
+                      <div className="font-bold text-slate-900">3. Kéo Khách Qua Zalo &amp; Mạng Xã Hội</div>
+                      <p className="text-slate-600 text-xs">
+                        Chia sẻ link công cụ <code className="bg-white px-1.5 py-0.5 rounded text-emerald-700 font-semibold border">vay365.com</code> vào các nhóm cư dân, hội tài xế công nghệ, nhóm tiểu thương buôn bán. Khách bấm vào tự tính lãi suất &gt; ấn tượng với sự minh bạch &gt; để lại số điện thoại ngay.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center shrink-0 text-xs">D</span>
+                    <div className="space-y-1">
+                      <div className="font-bold text-slate-900">4. Thường Xuyên Kiểm Tra Cổng Quản Trị</div>
+                      <p className="text-slate-600 text-xs">
+                        Bấm vào <strong className="text-slate-800">"🔒 Cổng Quản Trị"</strong> ở chân trang để xem trực tiếp danh sách đơn khách đã đăng ký. Đơn được lưu bền vững trên server, đảm bảo không bị thất lạc kể cả khi hộp thư Gmail bị nghẽn spam.
+                      </p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          )}
+
           {/* TOPIC 1: SO SÁNH LÃI SUẤT */}
           {activeTopic === 'so_sanh_lai' && (
             <div className="space-y-6">

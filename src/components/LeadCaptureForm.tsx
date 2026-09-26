@@ -21,6 +21,7 @@ import { Lead, LoanPurpose } from '../types';
 import { LOAN_PURPOSES, VIETNAM_PROVINCES } from '../data/constants';
 import { formatVND, formatVNDCompact } from '../utils/loanCalculator';
 import { sendLeadEmailNotification, getAdminNotificationEmail } from '../services/emailService';
+import { submitLead } from '../services/leadService';
 
 interface LeadCaptureFormProps {
   initialAmount?: number;
@@ -82,12 +83,15 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
       errs.fullName = 'Họ và tên quá ngắn';
     }
 
-    const cleanPhone = phone.replace(/\D/g, '');
-    const phoneRegex = /^(0[3|5|7|8|9])+([0-9]{8})$/;
+    let cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.startsWith('84') && cleanPhone.length === 11) {
+      cleanPhone = '0' + cleanPhone.slice(2);
+    }
+    const phoneRegex = /^0[35789]\d{8}$/;
     if (!cleanPhone) {
       errs.phone = 'Vui lòng nhập số điện thoại';
     } else if (!phoneRegex.test(cleanPhone)) {
-      errs.phone = 'Số điện thoại không hợp lệ (10 chữ số, bắt đầu bằng 03, 05, 07, 08, 09)';
+      errs.phone = 'Số điện thoại không hợp lệ (10 chữ số, ví dụ 0912345678, 03..., 05..., 07..., 08...)';
     }
 
     if (!province) {
@@ -115,14 +119,19 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    setEmailStatus('Đang gửi thông tin đến chuyên viên...');
+    setEmailStatus('Đang lưu hồ sơ và kích hoạt thông báo Gmail...');
+
+    let normalizedPhone = phone.replace(/\D/g, '');
+    if (normalizedPhone.startsWith('84') && normalizedPhone.length === 11) {
+      normalizedPhone = '0' + normalizedPhone.slice(2);
+    }
 
     const purposeObj = LOAN_PURPOSES.find(p => p.value === loanPurpose);
 
     const newLead: Lead = {
       id: `LEAD-${Math.floor(1000 + Math.random() * 9000)}`,
       fullName: fullName.trim(),
-      phone: phone.replace(/\D/g, ''),
+      phone: normalizedPhone,
       province,
       loanAmount,
       loanTenure,
@@ -150,21 +159,45 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
       // Safe fallback
     }
 
-    // Trigger automated email dispatch in background
+    // Save persistently to server database and trigger automated email notification
+    let finalLead = newLead;
     try {
-      const emailRes = await sendLeadEmailNotification(newLead);
-      if (emailRes.success) {
-        setEmailStatus(`Đã gửi thông báo tới ${emailRes.targetEmail}`);
+      const saveRes = await submitLead(newLead);
+      if (saveRes && saveRes.lead) {
+        finalLead = saveRes.lead;
+      }
+      
+      if (saveRes?.emailResult?.success) {
+        setEmailStatus('Đã gửi thông báo hồ sơ thành công tới Gmail phamduchai6991@gmail.com');
       } else {
-        setEmailStatus(emailRes.message);
+        // Fallback email dispatch directly
+        try {
+          const emailRes = await sendLeadEmailNotification(newLead);
+          if (emailRes.success) {
+            setEmailStatus(`Đã gửi thông báo tới ${emailRes.targetEmail}`);
+          } else {
+            setEmailStatus('Đã ghi nhận hồ sơ vào hệ thống quản trị');
+          }
+        } catch {
+          setEmailStatus('Đã ghi nhận hồ sơ vào hệ thống quản trị');
+        }
       }
     } catch (err) {
-      console.error('Email dispatch error:', err);
+      console.error('Submit lead error:', err);
+      // Fallback email dispatch directly
+      try {
+        const emailRes = await sendLeadEmailNotification(newLead);
+        if (emailRes.success) {
+          setEmailStatus(`Đã gửi thông báo tới ${emailRes.targetEmail}`);
+        }
+      } catch {
+        // Fallback
+      }
     }
 
     setIsSubmitting(false);
-    setSubmittedLead(newLead);
-    onSubmitSuccess(newLead);
+    setSubmittedLead(finalLead);
+    onSubmitSuccess(finalLead);
   };
 
   const handleResetForm = () => {

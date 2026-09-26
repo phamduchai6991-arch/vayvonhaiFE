@@ -15,6 +15,12 @@ import { CalculationMethod, Lead, LeadStatus, LoanPackage, LoanPurpose } from '.
 import { INITIAL_LEADS } from './data/constants';
 import { isAuthenticated, logout } from './services/authService';
 import { recordPageView, recordLeadSubmission } from './services/analyticsService';
+import { 
+  fetchAllLeads, 
+  updateLead, 
+  deleteLead, 
+  resetServerLeads 
+} from './services/leadService';
 
 const LEADS_STORAGE_KEY = 'duchai_fe_customer_leads';
 
@@ -24,7 +30,7 @@ export default function App() {
   const [isAdminLoginOpen, setIsAdminLoginOpen] = useState<boolean>(false);
   const [isAdminLeadsOpen, setIsAdminLeadsOpen] = useState<boolean>(false);
 
-  // Leads state with LocalStorage persistence
+  // Leads state with LocalStorage + Server persistence
   const [leads, setLeads] = useState<Lead[]>(() => {
     try {
       const saved = localStorage.getItem(LEADS_STORAGE_KEY);
@@ -37,6 +43,16 @@ export default function App() {
     return INITIAL_LEADS;
   });
 
+  // Fetch real persistent leads from server on startup
+  useEffect(() => {
+    fetchAllLeads().then((serverLeads) => {
+      if (serverLeads && serverLeads.length > 0) {
+        setLeads(serverLeads);
+      }
+    });
+  }, []);
+
+  // Synchronize with local storage as instant client cache
   useEffect(() => {
     try {
       localStorage.setItem(LEADS_STORAGE_KEY, JSON.stringify(leads));
@@ -52,6 +68,9 @@ export default function App() {
 
   // Admin portal entry handler - gated by auth check
   const handleOpenAdminPortal = () => {
+    // Refresh leads on open
+    handleRefreshLeads();
+
     if (isAuthenticated()) {
       setIsLoggedIn(true);
       setIsAdminLeadsOpen(true);
@@ -62,6 +81,7 @@ export default function App() {
   };
 
   const handleLoginSuccess = () => {
+    handleRefreshLeads();
     setIsLoggedIn(true);
     setIsAdminLoginOpen(false);
     setIsAdminLeadsOpen(true);
@@ -107,11 +127,15 @@ export default function App() {
   // Handle new lead submission
   const handleNewLeadSubmit = (newLead: Lead) => {
     recordLeadSubmission();
-    setLeads((prev) => [newLead, ...prev]);
+    setLeads((prev) => [newLead, ...prev.filter((l) => l.id !== newLead.id)]);
   };
 
   // Update lead status in Admin Modal
-  const handleUpdateLeadStatus = (leadId: string, status: LeadStatus, adminNote?: string) => {
+  const handleUpdateLeadStatus = async (
+    leadId: string, 
+    status: LeadStatus, 
+    adminNote?: string
+  ) => {
     setLeads((prev) =>
       prev.map((item) =>
         item.id === leadId
@@ -123,16 +147,32 @@ export default function App() {
           : item
       )
     );
+
+    // Persist changes to server
+    await updateLead(leadId, {
+      status,
+      adminNote,
+    });
   };
 
   // Delete a lead
-  const handleDeleteLead = (leadId: string) => {
+  const handleDeleteLead = async (leadId: string) => {
     setLeads((prev) => prev.filter((item) => item.id !== leadId));
+    await deleteLead(leadId);
   };
 
   // Reset sample leads
-  const handleResetSampleLeads = () => {
-    setLeads(INITIAL_LEADS);
+  const handleResetSampleLeads = async () => {
+    const resetLeads = await resetServerLeads();
+    setLeads(resetLeads && resetLeads.length > 0 ? resetLeads : INITIAL_LEADS);
+  };
+
+  // Refresh latest leads from server
+  const handleRefreshLeads = async () => {
+    const latest = await fetchAllLeads();
+    if (latest && latest.length > 0) {
+      setLeads(latest);
+    }
   };
 
   const newLeadsCount = leads.filter((l) => l.status === 'new').length;
@@ -143,25 +183,23 @@ export default function App() {
       {/* 1. Header with navigation, live lead counter, and admin trigger */}
       <Header
         onOpenCalculator={() => scrollToSection('calculator')}
-        onOpenLeadForm={() => scrollToSection('lead-form-section')}
+        onOpenForm={() => scrollToSection('lead-form-section')}
+        onOpenPackages={() => scrollToSection('packages')}
+        onOpenProcess={() => scrollToSection('process')}
+        onOpenFAQ={() => scrollToSection('faq')}
+        onOpenSEOGuide={() => scrollToSection('seo-guide')}
         onOpenAdminLeads={handleOpenAdminPortal}
-        onNavigateSection={scrollToSection}
-        leadsCount={leads.length}
-        newLeadsCount={newLeadsCount}
-        isLoggedIn={isLoggedIn}
-        onLogout={handleAdminLogout}
+        leadsCount={newLeadsCount}
       />
 
-      {/* Main Page Content */}
       <main className="flex-1">
-        
         {/* 2. Hero Section */}
         <HeroSection
-          onScrollToCalculator={() => scrollToSection('calculator')}
-          onScrollToForm={() => scrollToSection('lead-form-section')}
+          onApplyClick={() => scrollToSection('lead-form-section')}
+          onCalculateClick={() => scrollToSection('calculator')}
         />
 
-        {/* 3. Declining Balance Loan Calculator */}
+        {/* 3. Interactive Loan Calculator */}
         <LoanCalculator onApplyLoan={handleApplyFromCalculator} />
 
         {/* 4. Lead Capture Form */}
@@ -175,18 +213,17 @@ export default function App() {
         {/* 5. Loan Packages Showcase */}
         <LoanPackages onSelectPackage={handleSelectPackage} />
 
-        {/* 6. Comprehensive Financial Knowledge & SEO Guide */}
+        {/* 6. Simple 4-Step Process */}
+        <ProcessSteps onStartNow={() => scrollToSection('lead-form-section')} />
+
+        {/* 7. Comprehensive FAQ */}
+        <FAQSection onAskQuestion={() => scrollToSection('lead-form-section')} />
+
+        {/* 8. SEO Performance & Best Practice Guide */}
         <SEOGuideSection />
-
-        {/* 7. 4-Step Loan Process */}
-        <ProcessSteps />
-
-        {/* 8. FAQ Section */}
-        <FAQSection />
-
       </main>
 
-      {/* 8. Footer */}
+      {/* Footer */}
       <Footer
         onNavigateSection={scrollToSection}
         onOpenAdminLeads={handleOpenAdminPortal}
@@ -206,7 +243,7 @@ export default function App() {
         onLoginSuccess={handleLoginSuccess}
       />
 
-      {/* Modal: Full Admin Portal (Leads Management) */}
+      {/* Modal: Full Admin Portal (Leads Management, Google Sheets & Sales Distribution) */}
       <AdminLeadsModal
         isOpen={isAdminLeadsOpen}
         onClose={() => setIsAdminLeadsOpen(false)}
@@ -215,6 +252,7 @@ export default function App() {
         onUpdateLeadStatus={handleUpdateLeadStatus}
         onDeleteLead={handleDeleteLead}
         onResetSampleLeads={handleResetSampleLeads}
+        onRefreshLeads={handleRefreshLeads}
       />
 
     </div>

@@ -157,14 +157,31 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
 
         </div>
 
-        {/* Bottom Bar: Disclaimer & Copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
+        {/* YMYL & E-E-A-T Consumer Protection & Transparency Notice */}
+        <div className="pt-6 pb-6 border-b border-slate-800 text-[11px] text-slate-400 space-y-2 leading-relaxed">
+          <div className="font-semibold text-slate-300 flex items-center gap-1.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>Tuyên Bố Minh Bạch Tài Chính &amp; Bảo Vệ Người Tiêu Dùng (Theo Tiêu Chuẩn Google E-E-A-T)</span>
+          </div>
           <p>
-            © {new Date().getFullYear()} Vay365. Mọi quyền được bảo lưu. Tư vấn vay tín chấp &amp; tính lãi suất chính xác.
+            <strong>Thông tin dịch vụ:</strong> Vay365.com (phụ trách tư vấn: Chuyên viên Đức Hải FE - Hotline 0583.345.345) là kênh tư vấn tài chính độc lập và cung cấp công cụ tính lịch trả nợ dự kiến theo phương pháp dư nợ giảm dần. Chúng tôi kết nối khách hàng với các gói vay tín chấp tiêu dùng từ các đối tác ngân hàng và tổ chức tín dụng được Ngân hàng Nhà nước cấp phép hoạt động tại Việt Nam.
+          </p>
+          <p>
+            <strong>Hạn mức &amp; Lãi suất:</strong> Hạn mức vay từ 3.000.000 VNĐ đến 100.000.000 VNĐ. Kỳ hạn vay từ 6 tháng đến tối đa 36 tháng. Lãi suất vay tín chấp ưu đãi từ 0.6%/tháng đến tối đa 1.8%/tháng (tương đương 7.2% - 21.6%/năm tính theo dư nợ giảm dần), tùy thuộc vào điểm tín dụng CIC và hồ sơ thu nhập cụ thể của khách hàng.
+          </p>
+          <p className="text-amber-300/90 font-medium">
+            ⚠️ <strong>Cảnh báo quan trọng:</strong> Dịch vụ tư vấn và lập bảng tính lãi suất tại Vay365 là <u>hoàn toàn miễn phí 100%</u>. Chúng tôi tuyệt đối KHÔNG thu bất kỳ khoản tiền nào trước khi giải ngân (không thu phí hồ sơ, không thu phí bảo hiểm ứng trước). Mọi yêu cầu chuyển tiền cọc đều là hành vi giả mạo mạo danh. Cam kết bảo mật tuyệt đối thông tin khách hàng theo Nghị định 13/2023/NĐ-CP.
+          </p>
+        </div>
+
+        {/* Bottom Bar: Disclaimer & Copyright */}
+        <div className="pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 gap-4">
+          <p>
+            © {new Date().getFullYear()} Vay365 - Đức Hải FE. Mọi quyền được bảo lưu. Tư vấn vay tín chấp &amp; tính lãi suất chính xác.
           </p>
 
           <p className="flex items-center gap-1">
-            <span>Tư vấn tài chính minh bạch &amp; an toàn</span>
+            <span>Tư vấn tài chính minh bạch, chuẩn ngân hàng &amp; an toàn</span>
           </p>
         </div>
 

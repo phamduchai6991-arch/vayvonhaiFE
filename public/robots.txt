@@ -1,12 +1,19 @@
 User-agent: *
 Allow: /
+Disallow: /api/
 
 # Googlebot & Major Crawlers
 User-agent: Googlebot
 Allow: /
+Disallow: /api/
+
+User-agent: Googlebot-Mobile
+Allow: /
+Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
+Disallow: /api/
 
 User-agent: Applebot
 Allow: /

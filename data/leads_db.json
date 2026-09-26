@@ -1,0 +1,52 @@
+[
+  {
+    "id": "LEAD-9082",
+    "fullName": "Nguyễn Văn Hùng",
+    "phone": "0912345678",
+    "province": "Nghệ An",
+    "loanAmount": 80000000,
+    "loanTenure": 24,
+    "loanPurpose": "tin_chap_theo_luong",
+    "loanPurposeName": "Vay Tín Chấp Theo Bảng Lương",
+    "monthlyIncome": 18000000,
+    "preferredContactTime": "Buổi sáng (8h - 12h)",
+    "note": "Nhận lương chuyển khoản Vietcombank 18tr/tháng, cần vay tín chấp sửa sang nhà",
+    "createdAt": "2026-08-21T08:30:00Z",
+    "status": "new",
+    "source": "Công cụ tính lãi"
+  },
+  {
+    "id": "LEAD-8741",
+    "fullName": "Trần Thị Mai Phương",
+    "phone": "0987654321",
+    "province": "Hà Nội",
+    "loanAmount": 50000000,
+    "loanTenure": 18,
+    "loanPurpose": "tin_chap_tieu_dung",
+    "loanPurposeName": "Vay Tín Chấp Tiêu Dùng Cá Nhân",
+    "monthlyIncome": 15000000,
+    "preferredContactTime": "Bất kỳ lúc nào",
+    "note": "Vay tín chấp tiêu dùng cá nhân không thế chấp",
+    "createdAt": "2026-08-21T04:15:00Z",
+    "status": "contacted",
+    "adminNote": "Đã gọi tư vấn, khách hẹn gửi sao kê lương qua Zalo chiều nay",
+    "source": "Form trang chủ"
+  },
+  {
+    "id": "LEAD-7319",
+    "fullName": "Lê Hoàng Nam",
+    "phone": "0903456789",
+    "province": "TP. Hồ Chí Minh",
+    "loanAmount": 100000000,
+    "loanTenure": 36,
+    "loanPurpose": "tin_chap_kinh_doanh",
+    "loanPurposeName": "Vay Tín Chấp Hộ Kinh Doanh",
+    "monthlyIncome": 30000000,
+    "preferredContactTime": "Buổi chiều (13h30 - 17h30)",
+    "note": "Kinh doanh cửa hàng tạp hóa, cần vốn nhập hàng không thế chấp",
+    "createdAt": "2026-08-20T14:40:00Z",
+    "status": "approved",
+    "adminNote": "Đã duyệt hồ sơ tín chấp 100tr kỳ hạn 36 tháng",
+    "source": "Gói vay tín chấp KD"
+  }
+]
