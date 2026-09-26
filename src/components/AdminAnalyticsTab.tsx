@@ -480,6 +480,7 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ leadsCount
                   <li>Đã dọn sạch các URL chứa ký tự hash (<code className="text-rose-600">#calculator</code>) trong file <code className="text-emerald-700">sitemap.xml</code> để Google không báo lỗi.</li>
                   <li>Tối ưu độ dài thẻ tiêu đề và mô tả chuẩn 55-60 ký tự giúp hiển thị đầy đủ, bắt mắt trên Google Mobile.</li>
                   <li>Bổ sung chính sách bảo mật, cảnh báo không thu tiền phí trước, thông tin chuyên viên phụ trách theo đúng tiêu chuẩn Google E-E-A-T.</li>
+                  <li>Đã nhúng mã xác minh Google Search Console: <code className="text-emerald-700 font-mono font-bold">XXzCdz4LbVREKeXmvBmi5FRrgTg55sdibPPR_Fj5j0s</code> vào mã nguồn.</li>
                 </ul>
               </div>
 
@@ -490,6 +491,37 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ leadsCount
                   <li>Đăng link website vào các nhóm Facebook/Zalo cộng đồng cư dân, tiểu thương chợ hoặc các hội lái xe taxi/công nghệ có nhu cầu vốn vay gấp.</li>
                   <li>Nộp lại sitemap vào Google Search Console để bot quét lại trang chủ ngay trong ngày.</li>
                 </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Sổ Tay Kiến Thức Nghiệp Vụ Tư Vấn Khách Hàng (Được chuyển vào Backend) */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <h5 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-emerald-600" />
+              <span>Sổ Tay Nghiệp Vụ Tư Vấn Khách Hàng (Chỉ Admin Xem)</span>
+            </h5>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-600">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <span className="font-bold text-slate-900 text-sm">💡 Lãi Giảm Dần vs Lãi Phẳng</span>
+                <p className="leading-relaxed">
+                  Khi khách thắc mắc, hãy giải thích: Lãi giảm dần tính trên số tiền gốc thực tế còn nợ. Càng về các tháng cuối, tiền lãi càng giảm đi đáng kể so với phương pháp lãi phẳng cố định.
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <span className="font-bold text-slate-900 text-sm">📋 Điều Kiện Duyệt 3Tr - 100Tr</span>
+                <p className="leading-relaxed">
+                  Khách từ 20 - 60 tuổi, có CCCD gắn chip chính chủ, không nợ xấu nhóm 3 trở lên trên CIC. Thu nhập từ 4 triệu/tháng (chấp nhận sao kê lương, cà vẹt xe, bảo hiểm nhân thọ hoặc hóa đơn điện nước).
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                <span className="font-bold text-slate-900 text-sm">⚡ Mẹo Duyệt Nhanh 2 - 24 Giờ</span>
+                <p className="leading-relaxed">
+                  Nhắc khách chuẩn bị sẵn ảnh chụp rõ 2 mặt CCCD, số điện thoại người tham chiếu (bạn bè/người thân) để nhận cuộc gọi xác minh tự động từ tổng đài thẩm định.
+                </p>
               </div>
             </div>
           </div>

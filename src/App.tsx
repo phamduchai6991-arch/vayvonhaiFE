@@ -6,7 +6,6 @@ import { LeadCaptureForm } from './components/LeadCaptureForm';
 import { LoanPackages } from './components/LoanPackages';
 import { ProcessSteps } from './components/ProcessSteps';
 import { FAQSection } from './components/FAQSection';
-import { SEOGuideSection } from './components/SEOGuideSection';
 import { AdminLeadsModal } from './components/AdminLeadsModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { Footer } from './components/Footer';
@@ -187,7 +186,6 @@ export default function App() {
         onOpenPackages={() => scrollToSection('packages')}
         onOpenProcess={() => scrollToSection('process')}
         onOpenFAQ={() => scrollToSection('faq')}
-        onOpenSEOGuide={() => scrollToSection('seo-guide')}
         onOpenAdminLeads={handleOpenAdminPortal}
         leadsCount={newLeadsCount}
       />
@@ -218,9 +216,6 @@ export default function App() {
 
         {/* 7. Comprehensive FAQ */}
         <FAQSection onAskQuestion={() => scrollToSection('lead-form-section')} />
-
-        {/* 8. SEO Performance & Best Practice Guide */}
-        <SEOGuideSection />
       </main>
 
       {/* Footer */}

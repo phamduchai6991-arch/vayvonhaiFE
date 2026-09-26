@@ -352,7 +352,7 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                 }`}
               >
                 <Activity className="w-4 h-4 text-amber-300" />
-                <span>Thống Kê &amp; Lượt Truy Cập</span>
+                <span>Thống Kê, SEO &amp; Phân Tích</span>
               </button>
             </div>
           </div>
