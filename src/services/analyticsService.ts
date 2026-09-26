@@ -183,14 +183,17 @@ export function getAnalyticsData(): AnalyticsData {
     }
     const data = JSON.parse(raw) as AnalyticsData;
     
-    // Ensure dailyTraffic exists and includes today
+    // Ensure dailyTraffic is strictly the last 7 consecutive days ending today
     const today = getTodayString();
     if (!data.dailyTraffic || data.dailyTraffic.length === 0) {
       data.dailyTraffic = generateInitialDailyData();
+      localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
+      return data;
     }
     
     const hasToday = data.dailyTraffic.some((d) => d.date === today);
     if (!hasToday) {
+      // Re-generate or slide forward to keep exactly last 7 days ending today
       data.dailyTraffic.push({
         date: today,
         dayLabel: getDayLabel(today),
@@ -199,12 +202,14 @@ export function getAnalyticsData(): AnalyticsData {
         calculations: 0,
         leads: 0,
       });
-      // Keep only last 14 days
-      if (data.dailyTraffic.length > 14) {
-        data.dailyTraffic = data.dailyTraffic.slice(-14);
-      }
-      localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
     }
+
+    // Sort chronologically and take strictly the last 7 days
+    data.dailyTraffic.sort((a, b) => a.date.localeCompare(b.date));
+    if (data.dailyTraffic.length > 7) {
+      data.dailyTraffic = data.dailyTraffic.slice(-7);
+    }
+    localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(data));
     
     return data;
   } catch {
@@ -358,4 +363,15 @@ export function recordLeadSubmission(): void {
   } catch {
     // ignore
   }
+}
+
+/**
+ * Reset and resynchronize analytics to clean 7-day rolling window
+ */
+export function resetAnalyticsToClean7Days(): AnalyticsData {
+  const init = getInitialAnalytics();
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(ANALYTICS_STORAGE_KEY, JSON.stringify(init));
+  }
+  return init;
 }

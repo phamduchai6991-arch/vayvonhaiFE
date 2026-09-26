@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { 
   getAnalyticsData, 
+  resetAnalyticsToClean7Days,
   AnalyticsData, 
   LoginEvent 
 } from '../services/analyticsService';
@@ -127,7 +128,9 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ leadsCount
     document.body.removeChild(link);
   };
 
-  const maxDailyViews = Math.max(...analytics.dailyTraffic.map((d) => d.pageviews), 1);
+  // Strictly take the last 7 days of dailyTraffic for the 7-day chart view
+  const recent7Days = (analytics.dailyTraffic || []).slice(-7);
+  const maxDailyViews = Math.max(...recent7Days.map((d) => d.pageviews), 1);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-slate-50">
@@ -148,6 +151,19 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ leadsCount
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <button
+            type="button"
+            onClick={() => {
+              const cleaned = resetAnalyticsToClean7Days();
+              setAnalytics(cleaned);
+            }}
+            className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Đồng bộ lại chuẩn 7 ngày gần nhất"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Chuẩn Hóa 7 Ngày</span>
+          </button>
+
           <button
             type="button"
             onClick={refreshData}
@@ -558,13 +574,13 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ leadsCount
             {/* Visual Bar Chart */}
             <div className="pt-4 pb-2">
               <div className="grid grid-cols-7 gap-2 sm:gap-4 items-end h-48 border-b border-slate-100 pb-2">
-                {analytics.dailyTraffic.map((day, idx) => {
+                {recent7Days.map((day, idx) => {
                   const viewHeight = Math.max(12, Math.round((day.pageviews / maxDailyViews) * 100));
-                  const isToday = idx === analytics.dailyTraffic.length - 1;
+                  const isToday = idx === recent7Days.length - 1;
 
                   return (
                     <div key={day.date} className="flex flex-col items-center gap-2 h-full justify-end group">
-                      <div className="text-[10px] font-bold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white px-1.5 py-0.5 rounded shadow-xs">
+                      <div className="text-[10px] font-bold text-slate-600 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white px-1.5 py-0.5 rounded shadow-xs pointer-events-none">
                         {day.pageviews} views
                       </div>
                       
@@ -608,7 +624,7 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ leadsCount
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {analytics.dailyTraffic.map((d) => (
+                  {recent7Days.map((d) => (
                     <tr key={d.date} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-2 px-3 font-semibold text-slate-800">{d.dayLabel}</td>
                       <td className="py-2 px-3 text-center font-bold text-emerald-700">{d.pageviews}</td>
