@@ -6,6 +6,9 @@ import { LeadCaptureForm } from './components/LeadCaptureForm';
 import { LoanPackages } from './components/LoanPackages';
 import { ProcessSteps } from './components/ProcessSteps';
 import { FAQSection } from './components/FAQSection';
+import { AboutAndExpertSection } from './components/AboutAndExpertSection';
+import { ContentSilosSection } from './components/ContentSilosSection';
+import { LegalModal } from './components/LegalModal';
 import { AdminLeadsModal } from './components/AdminLeadsModal';
 import { AdminLoginModal } from './components/AdminLoginModal';
 import { Footer } from './components/Footer';
@@ -93,6 +96,9 @@ export default function App() {
     setIsAdminLoginOpen(false);
   };
 
+  // Legal Modal State
+  const [legalModalDoc, setLegalModalDoc] = useState<'privacy' | 'terms' | 'disclaimer' | null>(null);
+
   // Prefilled parameters for LeadForm when user clicks from Calculator or Packages
   const [formPrefillAmount, setFormPrefillAmount] = useState<number>(100_000_000);
   const [formPrefillTerm, setFormPrefillTerm] = useState<number>(24);
@@ -136,6 +142,11 @@ export default function App() {
     setFormPrefillAmount(pkg.minAmount);
     setFormPrefillTerm(pkg.minTerm);
     setFormPrefillPurpose(pkg.purposeValue);
+    scrollToSection('lead-form-section');
+  };
+
+  // Handler when user clicks apply for a specific province/hub
+  const handleApplyForLocation = (locationName: string) => {
     scrollToSection('lead-form-section');
   };
 
@@ -228,10 +239,20 @@ export default function App() {
         {/* 5. Loan Packages Showcase */}
         <LoanPackages onSelectPackage={handleSelectPackage} />
 
-        {/* 6. Simple 4-Step Process */}
+        {/* 6. E-E-A-T Expert Profile & Verified Case Studies */}
+        <AboutAndExpertSection onConsultClick={() => scrollToSection('lead-form-section')} />
+
+        {/* 7. Content Silos: Financial Knowledge, Local Hubs & Products */}
+        <ContentSilosSection
+          onSelectPackage={handleSelectPackage}
+          onApplyForLocation={handleApplyForLocation}
+          onConsultClick={() => scrollToSection('lead-form-section')}
+        />
+
+        {/* 8. Simple 4-Step Process */}
         <ProcessSteps onStartNow={() => scrollToSection('lead-form-section')} />
 
-        {/* 7. Comprehensive FAQ */}
+        {/* 9. Comprehensive FAQ */}
         <FAQSection onAskQuestion={() => scrollToSection('lead-form-section')} />
       </main>
 
@@ -239,13 +260,21 @@ export default function App() {
       <Footer
         onNavigateSection={scrollToSection}
         onOpenAdminLeads={handleOpenAdminPortal}
+        onOpenLegalModal={(docKey) => setLegalModalDoc(docKey)}
       />
 
-      {/* 9. Floating Actions (Zalo, Hotline, Scroll to top) */}
+      {/* Floating Actions (Zalo, Hotline, Scroll to top) */}
       <FloatingActions
         onScrollToTop={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         onScrollToForm={() => scrollToSection('lead-form-section')}
         onScrollToCalculator={() => scrollToSection('calculator')}
+      />
+
+      {/* Modal: Legal & Privacy Documents */}
+      <LegalModal
+        isOpen={Boolean(legalModalDoc)}
+        docKey={legalModalDoc}
+        onClose={() => setLegalModalDoc(null)}
       />
 
       {/* Modal: Admin Login & Authentication */}

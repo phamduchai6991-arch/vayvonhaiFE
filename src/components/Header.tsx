@@ -108,24 +108,38 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-7">
+          <nav className="hidden lg:flex items-center gap-6">
             <button
               onClick={() => handleNavClick('calculator')}
-              className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
             >
               <Calculator className="w-4 h-4 text-emerald-600" />
-              <span>Tính Lãi Dư Nợ Giảm Dần</span>
+              <span>Tính Lãi Dư Nợ</span>
             </button>
             <button
               onClick={() => handleNavClick('packages')}
-              className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
             >
               <BadgePercent className="w-4 h-4 text-emerald-600" />
-              <span>Gói Vay Ưu Đãi</span>
+              <span>Gói Vay</span>
+            </button>
+            <button
+              onClick={() => handleNavClick('about-expert')}
+              className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              <span>Chuyên Gia &amp; Uy Tín</span>
+            </button>
+            <button
+              onClick={() => handleNavClick('content-silos')}
+              className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
+            >
+              <FileText className="w-4 h-4 text-emerald-600" />
+              <span>Cẩm Nang Vay</span>
             </button>
             <button
               onClick={() => handleNavClick('faq')}
-              className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors cursor-pointer"
             >
               <HelpCircle className="w-4 h-4 text-emerald-600" />
               <span>Hỏi Đáp</span>
@@ -199,6 +213,26 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="flex items-center gap-2.5">
               <BadgePercent className="w-4 h-4 text-emerald-600" />
               Các Gói Vay Ưu Đãi 2026
+            </span>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </button>
+          <button
+            onClick={() => handleNavClick('about-expert')}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-slate-800 font-medium hover:bg-emerald-50 hover:text-emerald-800"
+          >
+            <span className="flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
+              Hồ Sơ Chuyên Gia &amp; Case Study
+            </span>
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </button>
+          <button
+            onClick={() => handleNavClick('content-silos')}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-slate-800 font-medium hover:bg-emerald-50 hover:text-emerald-800"
+          >
+            <span className="flex items-center gap-2.5">
+              <FileText className="w-4 h-4 text-emerald-600" />
+              Cẩm Nang &amp; Địa Bàn Hỗ Trợ
             </span>
             <ChevronRight className="w-4 h-4 text-slate-400" />
           </button>

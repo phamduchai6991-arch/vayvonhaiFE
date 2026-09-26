@@ -78,21 +78,61 @@
           "description": "Nền tảng tư vấn vay tín chấp 3tr - 100tr không thế chấp và công cụ tính lãi suất dư nợ giảm dần chính xác."
         },
         {
+          "@type": "Person",
+          "@id": "https://vay365.com/#expert",
+          "name": "Phạm Đức Hải",
+          "alternateName": "Đức Hải FE",
+          "jobTitle": "Direct Sales Specialist (DSS) - Chuyên Viên Tư Vấn & Thẩm Định Tín Chấp",
+          "telephone": "0583.345.345",
+          "email": "phamduchai6991@gmail.com",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "12 Trần Minh Tông, Hưng Lộc",
+            "addressLocality": "TP. Vinh",
+            "addressRegion": "Nghệ An",
+            "addressCountry": "VN"
+          },
+          "knowsAbout": [
+            "Vay tín chấp không thế chấp",
+            "Tính lãi suất dư nợ giảm dần",
+            "Thẩm định hồ sơ tín dụng tiêu dùng CIC",
+            "Tư vấn quản trị tài chính cá nhân"
+          ],
+          "worksFor": {
+            "@type": "FinancialService",
+            "@id": "https://vay365.com/#financialService"
+          }
+        },
+        {
           "@type": "FinancialService",
           "@id": "https://vay365.com/#financialService",
           "name": "Vay365.com - Tư Vấn Vay Tín Chấp & Tính Lãi Suất",
+          "alternateName": "Vay365 Đức Hải FE",
           "url": "https://vay365.com/",
           "logo": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&h=500&fit=crop",
           "image": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=1200&h=630&fit=crop",
-          "description": "Dịch vụ tư vấn tài chính tiêu dùng chuyên nghiệp, hỗ trợ vay tín chấp từ 3 triệu đến 100 triệu không thế chấp, duyệt nhanh 24/7.",
+          "description": "Dịch vụ tư vấn tài chính tiêu dùng chuyên nghiệp, phụ trách bởi chuyên viên Phạm Đức Hải. Hỗ trợ vay tín chấp từ 3 triệu đến 100 triệu không thế chấp, duyệt nhanh 2 - 24 giờ.",
           "telephone": "0583.345.345",
           "email": "phamduchai6991@gmail.com",
           "priceRange": "3.000.000 VNĐ - 100.000.000 VNĐ",
-          "areaServed": "Việt Nam (Toàn quốc)",
+          "areaServed": [
+            "Nghệ An",
+            "Hà Tĩnh",
+            "Hà Nội",
+            "TP. Hồ Chí Minh",
+            "Toàn Quốc"
+          ],
           "address": {
             "@type": "PostalAddress",
-            "addressLocality": "Hà Nội",
+            "streetAddress": "12 Trần Minh Tông, Hưng Lộc",
+            "addressLocality": "TP. Vinh",
+            "addressRegion": "Nghệ An",
+            "postalCode": "460000",
             "addressCountry": "VN"
+          },
+          "founder": {
+            "@type": "Person",
+            "@id": "https://vay365.com/#expert"
           },
           "openingHoursSpecification": {
             "@type": "OpeningHoursSpecification",
@@ -105,8 +145,8 @@
               "Saturday",
               "Sunday"
             ],
-            "opens": "00:00",
-            "closes": "23:59"
+            "opens": "08:00",
+            "closes": "21:00"
           },
           "hasOfferCatalog": {
             "@type": "OfferCatalog",
@@ -115,8 +155,11 @@
               {
                 "@type": "Offer",
                 "itemOffered": {
-                  "@type": "LoanOrCredit",
+                  "@type": "FinancialProduct",
                   "name": "Vay Tín Chấp Theo Bảng Lương / Sao Kê",
+                  "description": "Gói vay ưu đãi lãi suất từ 0.6%/tháng (dư nợ giảm dần) dành cho người đi làm hưởng lương, hạn mức 3 - 100 triệu, kỳ hạn 6 - 36 tháng.",
+                  "feesAndCommissionsSpecification": "Miễn phí tư vấn và thẩm định 100%",
+                  "annualPercentageRate": "7.2% - 15.0%",
                   "amount": {
                     "@type": "MonetaryAmount",
                     "currency": "VND",
@@ -128,8 +171,11 @@
               {
                 "@type": "Offer",
                 "itemOffered": {
-                  "@type": "LoanOrCredit",
+                  "@type": "FinancialProduct",
                   "name": "Vay Tín Chấp Tiêu Dùng Cá Nhân Qua CCCD",
+                  "description": "Giải ngân nhanh 2 - 24 giờ qua CCCD gắn chip, không cần thế chấp tài sản hay giữ giấy tờ gốc.",
+                  "feesAndCommissionsSpecification": "Miễn phí 100%",
+                  "annualPercentageRate": "9.6% - 18.0%",
                   "amount": {
                     "@type": "MonetaryAmount",
                     "currency": "VND",
@@ -141,12 +187,31 @@
               {
                 "@type": "Offer",
                 "itemOffered": {
-                  "@type": "LoanOrCredit",
-                  "name": "Vay Tín Chấp Hộ Kinh Doanh & Buôn Bán Nhỏ",
+                  "@type": "FinancialProduct",
+                  "name": "Vay Tín Chấp Hộ Kinh Doanh & Tiểu Thương",
+                  "description": "Bổ sung vốn lưu động nhanh cho sạp chợ, cửa hàng, hộ kinh doanh không cần thế chấp nhà đất.",
+                  "feesAndCommissionsSpecification": "Miễn phí 100%",
+                  "annualPercentageRate": "10.8% - 21.6%",
                   "amount": {
                     "@type": "MonetaryAmount",
                     "currency": "VND",
                     "minValue": 5000000,
+                    "maxValue": 100000000
+                  }
+                }
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "FinancialProduct",
+                  "name": "Vay Tín Chấp Theo Hợp Đồng Bảo Hiểm Nhân Thọ",
+                  "description": "Hạn mức tối đa 100 triệu căn cứ theo phí đóng bảo hiểm nhân thọ định kỳ, không giữ hợp đồng gốc.",
+                  "feesAndCommissionsSpecification": "Miễn phí 100%",
+                  "annualPercentageRate": "9.6% - 16.8%",
+                  "amount": {
+                    "@type": "MonetaryAmount",
+                    "currency": "VND",
+                    "minValue": 3000000,
                     "maxValue": 100000000
                   }
                 }

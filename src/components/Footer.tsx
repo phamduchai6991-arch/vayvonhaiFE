@@ -14,9 +14,10 @@ import {
 interface FooterProps {
   onNavigateSection: (sectionId: string) => void;
   onOpenAdminLeads: () => void;
+  onOpenLegalModal: (docKey: 'privacy' | 'terms' | 'disclaimer') => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLeads }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLeads, onOpenLegalModal }) => {
   return (
     <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,25 +37,43 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
             </div>
 
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Dịch vụ tư vấn tài chính chuyên nghiệp Vay365, cung cấp công cụ tính lãi suất dư nợ giảm dần chuẩn xác và hỗ trợ kết nối khách hàng vay tín chấp nhanh chóng, an toàn, bảo mật.
+              Dịch vụ tư vấn tài chính tiêu dùng chuyên nghiệp Vay365, phụ trách bởi Chuyên viên <strong>Phạm Đức Hải (cựu Direct Sales Specialist tại FE Credit)</strong>. Cung cấp công cụ tính lãi suất dư nợ giảm dần chuẩn xác và bảo vệ quyền lợi người vay.
             </p>
 
             <div className="pt-2 text-xs space-y-1.5 text-slate-400">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Bảo mật thông tin khách hàng tuyệt đối</span>
+                <span>Bảo mật dữ liệu tuyệt đối (Nghị định 13/2023/NĐ-CP)</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-emerald-400" />
-                <span>Hỗ trợ tư vấn 24/7 toàn quốc</span>
+                <span>Tư vấn miễn phí 100% không thu phí cọc</span>
               </div>
             </div>
           </div>
 
           {/* Col 2: Quick Links */}
           <div className="lg:col-span-2 space-y-3">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Công Cụ &amp; Dịch Vụ</h4>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Khám Phá &amp; Dịch Vụ</h4>
             <ul className="space-y-2 text-xs">
+              <li>
+                <button
+                  onClick={() => onNavigateSection('about-expert')}
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer text-emerald-300 font-semibold"
+                >
+                  <ChevronRight className="w-3 h-3 text-emerald-500" />
+                  <span>Về chúng tôi &amp; Chuyên gia</span>
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => onNavigateSection('content-silos')}
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer text-emerald-300 font-semibold"
+                >
+                  <ChevronRight className="w-3 h-3 text-emerald-500" />
+                  <span>Cẩm nang &amp; Thị trường</span>
+                </button>
+              </li>
               <li>
                 <button
                   onClick={() => onNavigateSection('calculator')}
@@ -79,7 +98,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
                   className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer"
                 >
                   <ChevronRight className="w-3 h-3 text-slate-600" />
-                  <span>Các gói vay ưu đãi</span>
+                  <span>Gói vay tín chấp ưu đãi</span>
                 </button>
               </li>
               <li>
@@ -94,29 +113,42 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateSection, onOpenAdminLe
             </ul>
           </div>
 
-          {/* Col 3: Loan Products */}
+          {/* Col 3: Loan Products & Policies */}
           <div className="lg:col-span-3 space-y-3">
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Gói Vay Tín Chấp</h4>
+            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Pháp Lý &amp; Minh Bạch</h4>
             <ul className="space-y-2 text-xs text-slate-400">
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Vay tín chấp theo bảng lương</span>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenLegalModal('privacy')}
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer text-left"
+                >
+                  <ChevronRight className="w-3 h-3 text-slate-600" />
+                  <span>Chính sách bảo mật (Privacy Policy)</span>
+                </button>
               </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Vay tín chấp tiêu dùng cá nhân</span>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenLegalModal('terms')}
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer text-left"
+                >
+                  <ChevronRight className="w-3 h-3 text-slate-600" />
+                  <span>Điều khoản dịch vụ (Terms)</span>
+                </button>
               </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Vay tín chấp tiểu thương &amp; kinh doanh</span>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => onOpenLegalModal('disclaimer')}
+                  className="hover:text-emerald-400 transition-colors flex items-center gap-1 cursor-pointer text-left"
+                >
+                  <ChevronRight className="w-3 h-3 text-slate-600" />
+                  <span>Tuyên bố miễn trừ trách nhiệm</span>
+                </button>
               </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Vay tín chấp theo HĐ bảo hiểm &amp; hóa đơn</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span>Thời hạn vay trả góp 6 - 36 tháng</span>
+              <li className="pt-2 border-t border-slate-800 text-[11px] text-slate-500">
+                <span>Vay tín chấp theo lương • Tiểu thương • Hóa đơn &amp; HĐ Bảo hiểm</span>
               </li>
             </ul>
           </div>
