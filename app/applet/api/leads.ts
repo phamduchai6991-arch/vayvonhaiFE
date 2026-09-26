@@ -1,4 +1,6 @@
 import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
 
 const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'phamduchai6991@gmail.com';
 
@@ -55,35 +57,71 @@ const INITIAL_LEADS = [
   }
 ];
 
-// Anti-spam in-memory cache to prevent flood attacks and duplicate emails
+// In-memory leads storage for serverless warm runtime
+let inMemoryLeads: any[] = [...INITIAL_LEADS];
+
+// Helper to get leads from /tmp or in-memory
+function getStoredLeads(): any[] {
+  const tmpFile = path.join('/tmp', 'leads_db.json');
+  try {
+    if (fs.existsSync(tmpFile)) {
+      const data = fs.readFileSync(tmpFile, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        inMemoryLeads = parsed;
+        return inMemoryLeads;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return inMemoryLeads;
+}
+
+// Helper to save leads to /tmp and in-memory
+function saveLeadToStorage(newLead: any): any[] {
+  const leads = getStoredLeads();
+  const exists = leads.some((l: any) => l.id === newLead.id || (l.phone === newLead.phone && l.createdAt === newLead.createdAt));
+  if (!exists) {
+    leads.unshift(newLead);
+    inMemoryLeads = leads;
+    try {
+      const tmpFile = path.join('/tmp', 'leads_db.json');
+      fs.writeFileSync(tmpFile, JSON.stringify(leads, null, 2), 'utf-8');
+    } catch {
+      // ignore
+    }
+  }
+  return leads;
+}
+
+// Chống Spam & Giới hạn tần suất
 const recentSubmissions = new Map<string, number>();
 
 function isSpamOrFlooding(phone: string, ip: string): boolean {
   const now = Date.now();
-  
-  // Clean expired entries older than 5 minutes
   for (const [key, timestamp] of recentSubmissions.entries()) {
     if (now - timestamp > 5 * 60 * 1000) {
       recentSubmissions.delete(key);
     }
   }
 
-  // Check 1: Duplicate phone submission within 3 minutes
+  // Chặn gửi trùng số trong vòng 3 phút
   const phoneKey = `phone:${phone}`;
   if (recentSubmissions.has(phoneKey)) {
     const lastTime = recentSubmissions.get(phoneKey)!;
     if (now - lastTime < 3 * 60 * 1000) {
-      return true; // Duplicate spam
+      return true;
     }
   }
 
-  // Check 2: Same IP submitting more than 1 lead per 15 seconds
+  // Chặn IP gửi dồn dập (tối thiểu 15 giây giữa các lần)
   if (ip && ip !== 'unknown') {
     const ipKey = `ip:${ip}`;
     if (recentSubmissions.has(ipKey)) {
       const lastTime = recentSubmissions.get(ipKey)!;
       if (now - lastTime < 15 * 1000) {
-        return true; // IP flooding
+        return true;
       }
     }
     recentSubmissions.set(ipKey, now);
@@ -93,8 +131,59 @@ function isSpamOrFlooding(phone: string, ip: string): boolean {
   return false;
 }
 
+// Chuyển danh sách Lead thành file CSV định dạng chuẩn Excel với UTF-8 BOM
+function generateExcelCSV(leads: any[]): string {
+  const headers = [
+    'Mã Hồ Sơ',
+    'Thời Gian Gửi',
+    'Họ Và Tên',
+    'Số Điện Thoại',
+    'Số Tiền Vay (VNĐ)',
+    'Kỳ Hạn (Tháng)',
+    'Gói Vay / Mục Đích',
+    'Thu Nhập Hàng Tháng',
+    'Tỉnh / Thành Phố',
+    'Trạng Thái',
+    'Ghi Chú Khách',
+    'Ghi Chú Quản Trị',
+  ];
+
+  const escapeCSV = (val: any) => {
+    if (val === undefined || val === null) return '""';
+    const clean = String(val).replace(/"/g, '""');
+    return `"${clean}"`;
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'new': return 'Chưa gọi (Mới)';
+      case 'contacted': return 'Đã liên hệ tư vấn';
+      case 'approved': return 'Đã duyệt giải ngân';
+      case 'rejected': return 'Từ chối';
+      default: return status || 'Mới';
+    }
+  };
+
+  const rows = leads.map((lead: any) => [
+    escapeCSV(lead.id || ''),
+    escapeCSV(lead.createdAt || ''),
+    escapeCSV(lead.fullName || ''),
+    escapeCSV(`'${lead.phone || ''}`), // Thêm dấu ' để Excel không làm mất số 0 đầu
+    escapeCSV(new Intl.NumberFormat('vi-VN').format(lead.loanAmount || 0)),
+    escapeCSV(lead.loanTenure || 24),
+    escapeCSV(lead.loanPurposeName || lead.loanPurpose || 'Vay Tín Chấp'),
+    escapeCSV(lead.monthlyIncome ? new Intl.NumberFormat('vi-VN').format(Number(lead.monthlyIncome) || 0) : 'Không khai báo'),
+    escapeCSV(lead.province || 'Chưa cung cấp'),
+    escapeCSV(getStatusText(lead.status)),
+    escapeCSV(lead.notes || lead.note || ''),
+    escapeCSV(lead.adminNote || ''),
+  ]);
+
+  // UTF-8 BOM (\uFEFF) giúp Excel mở trực tiếp hiển thị 100% tiếng Việt không bị lỗi font
+  return '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+}
+
 export default async function handler(req: any, res: any) {
-  // Cấu hình CORS để frontend gọi không bị chặn
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -118,16 +207,29 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  // 2. GET leads - Xem danh sách khách hàng
+  // 2. Xuất File Excel trực tiếp (GET /api/leads?export=excel hoặc ?export=csv)
+  if (req.method === 'GET' && (url.includes('export=excel') || url.includes('export=csv') || req.query?.export)) {
+    const leads = getStoredLeads();
+    const csvData = generateExcelCSV(leads);
+    const filename = `Vay365_Danh_Sach_Ho_So_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csvData);
+  }
+
+  // 3. GET leads - Xem danh sách khách hàng JSON
   if (req.method === 'GET') {
+    const leads = getStoredLeads();
     return res.status(200).json({
       success: true,
-      leads: INITIAL_LEADS,
+      total: leads.length,
+      leads,
       message: 'Danh sách hồ sơ khách hàng Vay365'
     });
   }
 
-  // 3. POST new lead - Khi khách gửi form đăng ký vay
+  // 4. POST new lead - Khi khách gửi đơn đăng ký vay
   if (req.method === 'POST') {
     let leadData = req.body?.lead || req.body;
     if (typeof leadData === 'string') {
@@ -140,23 +242,22 @@ export default async function handler(req: any, res: any) {
 
     const cleanPhone = String(leadData.phone || '').replace(/\D/g, '');
     
-    // Kiểm tra định dạng số điện thoại Việt Nam (10 số, bắt đầu bằng 03, 05, 07, 08, 09)
+    // Kiểm tra số điện thoại chuẩn Việt Nam (10 số, đầu 03, 05, 07, 08, 09)
     const vnPhoneRegex = /^(03|05|07|08|09)\d{8}$/;
     if (!vnPhoneRegex.test(cleanPhone)) {
       return res.status(400).json({ 
         success: false, 
-        message: 'Số điện thoại không hợp lệ theo chuẩn mạng viễn thông Việt Nam' 
+        message: 'Số điện thoại không hợp lệ theo chuẩn viễn thông Việt Nam' 
       });
     }
 
-    // Lấy IP của người gửi để chống bot spam
     const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
     
-    // Kiểm tra chống bot spam / dồn dập
+    // Kiểm tra chặn Spam / Flood
     if (isSpamOrFlooding(cleanPhone, String(clientIp))) {
       return res.status(429).json({
         success: false,
-        message: 'Hệ thống đã nhận được yêu cầu của bạn, vui lòng không gửi lặp lại liên tục.'
+        message: 'Hệ thống đã nhận được yêu cầu, vui lòng không gửi lại liên tục.'
       });
     }
 
@@ -167,9 +268,11 @@ export default async function handler(req: any, res: any) {
       status: 'new',
     };
 
-    // Tự động bắn email thông báo về phamduchai6991@gmail.com
-    const formattedAmount = new Intl.NumberFormat('vi-VN').format(newLead.loanAmount || 0);
+    // LƯU HỒ SƠ VÀO HỆ THỐNG BACKEND ĐỂ XUẤT FILE EXCEL
+    saveLeadToStorage(newLead);
 
+    // Gửi email thông báo tự động về Gmail Admin
+    const formattedAmount = new Intl.NumberFormat('vi-VN').format(newLead.loanAmount || 0);
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;
 
@@ -212,8 +315,29 @@ export default async function handler(req: any, res: any) {
     return res.status(201).json({
       success: true,
       lead: newLead,
-      message: 'Đã lưu hồ sơ thành công vào hệ thống quản trị!',
+      message: 'Đã lưu hồ sơ thành công vào hệ thống quản trị và sẵn sàng xuất Excel!',
     });
+  }
+
+  // 5. Cập nhật trạng thái hồ sơ (PATCH /api/leads)
+  if (req.method === 'PATCH') {
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch {}
+    }
+    const id = body?.id || url.split('/').pop()?.split('?')[0];
+    const leads = getStoredLeads();
+    const idx = leads.findIndex((l: any) => l.id === id);
+
+    if (idx !== -1) {
+      leads[idx] = { ...leads[idx], ...body };
+      inMemoryLeads = leads;
+      try {
+        fs.writeFileSync(path.join('/tmp', 'leads_db.json'), JSON.stringify(leads, null, 2), 'utf-8');
+      } catch {}
+      return res.status(200).json({ success: true, lead: leads[idx] });
+    }
+    return res.status(404).json({ success: false, message: 'Không tìm thấy hồ sơ' });
   }
 
   return res.status(200).json({ success: true, message: 'API Vay365 Leads Service Ready' });

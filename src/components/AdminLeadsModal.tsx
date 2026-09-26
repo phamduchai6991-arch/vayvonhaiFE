@@ -471,12 +471,12 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                   </button>
 
                   <button
-                    onClick={() => exportLeadsToCSV(filteredLeads)}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-1 rounded-md font-bold text-[11px] flex items-center gap-1 cursor-pointer"
-                    title="Xuất file CSV chuẩn cho Excel"
+                    onClick={() => exportLeadsToCSV(filteredLeads, `Vay365_Danh_Sach_Ho_So_${new Date().toISOString().slice(0, 10)}.csv`)}
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded-md font-bold text-[11px] flex items-center gap-1.5 cursor-pointer shadow-xs transition-colors"
+                    title="Xuất toàn bộ danh sách hồ sơ ra file Excel (.csv có hỗ trợ tiếng Việt có dấu)"
                   >
-                    <Download className="w-3 h-3" />
-                    <span>Tải File CSV</span>
+                    <Download className="w-3.5 h-3.5" />
+                    <span>📊 Xuất File Excel</span>
                   </button>
 
                   <button

@@ -395,10 +395,66 @@ app.get('/api/smtp/verify', async (req, res) => {
   }
 });
 
-// 2. Get all persistent leads from server
+// 2. Get all persistent leads from server (supports direct Excel export via ?export=excel)
 app.get('/api/leads', (req, res) => {
   const leads = getStoredLeads();
-  res.json({ success: true, leads });
+
+  if (req.query.export === 'excel' || req.query.export === 'csv') {
+    const headers = [
+      'Mã Hồ Sơ',
+      'Thời Gian Gửi',
+      'Họ Và Tên',
+      'Số Điện Thoại',
+      'Số Tiền Vay (VNĐ)',
+      'Kỳ Hạn (Tháng)',
+      'Gói Vay / Mục Đích',
+      'Thu Nhập Hàng Tháng',
+      'Tỉnh / Thành Phố',
+      'Trạng Thái',
+      'Ghi Chú Khách',
+      'Ghi Chú Quản Trị',
+    ];
+
+    const escapeCSV = (val: any) => {
+      if (val === undefined || val === null) return '""';
+      const clean = String(val).replace(/"/g, '""');
+      return `"${clean}"`;
+    };
+
+    const getStatusText = (status: string) => {
+      switch (status) {
+        case 'new': return 'Chưa gọi (Mới)';
+        case 'contacted': return 'Đã liên hệ tư vấn';
+        case 'approved': return 'Đã duyệt giải ngân';
+        case 'rejected': return 'Từ chối';
+        default: return status || 'Mới';
+      }
+    };
+
+    const rows = leads.map((lead: any) => [
+      escapeCSV(lead.id || ''),
+      escapeCSV(lead.createdAt || ''),
+      escapeCSV(lead.fullName || ''),
+      escapeCSV(`'${lead.phone || ''}`),
+      escapeCSV(new Intl.NumberFormat('vi-VN').format(lead.loanAmount || 0)),
+      escapeCSV(lead.loanTenure || 24),
+      escapeCSV(lead.loanPurposeName || lead.loanPurpose || 'Vay Tín Chấp'),
+      escapeCSV(lead.monthlyIncome ? new Intl.NumberFormat('vi-VN').format(Number(lead.monthlyIncome) || 0) : 'Không khai báo'),
+      escapeCSV(lead.province || 'Chưa cung cấp'),
+      escapeCSV(getStatusText(lead.status)),
+      escapeCSV(lead.notes || lead.note || ''),
+      escapeCSV(lead.adminNote || ''),
+    ]);
+
+    const csvData = '\uFEFF' + [headers.join(','), ...rows.map((r: any) => r.join(','))].join('\r\n');
+    const filename = `Vay365_Danh_Sach_Ho_So_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csvData);
+  }
+
+  res.json({ success: true, total: leads.length, leads });
 });
 
 // 3. Create new lead (Saves permanently to server + Sends Email with AWAIT)
