@@ -22,6 +22,7 @@ import { LOAN_PURPOSES, VIETNAM_PROVINCES } from '../data/constants';
 import { formatVND, formatVNDCompact } from '../utils/loanCalculator';
 import { sendLeadEmailNotification, getAdminNotificationEmail } from '../services/emailService';
 import { submitLead } from '../services/leadService';
+import { generateClientSecurityToken } from '../utils/security';
 
 interface LeadCaptureFormProps {
   initialAmount?: number;
@@ -50,10 +51,29 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
   const [preferredContactTime, setPreferredContactTime] = useState<string>('Bất kỳ lúc nào');
   const [note, setNote] = useState('');
 
+  // Anti-bot security states
+  const [securityToken, setSecurityToken] = useState<string>('');
+  const [clientTs, setClientTs] = useState<number>(0);
+  const [hpWebsite, setHpWebsite] = useState<string>(''); // Invisible Honeypot
+  const [captchaNum1, setCaptchaNum1] = useState<number>(3);
+  const [captchaNum2, setCaptchaNum2] = useState<number>(4);
+  const [captchaAnswer, setCaptchaAnswer] = useState<string>('');
+
   // Form states
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedLead, setSubmittedLead] = useState<Lead | null>(null);
+
+  // Initialize anti-spam security token and dynamic math question
+  useEffect(() => {
+    const sec = generateClientSecurityToken();
+    setSecurityToken(sec.token);
+    setClientTs(sec.ts);
+    const n1 = Math.floor(Math.random() * 6) + 2;
+    const n2 = Math.floor(Math.random() * 5) + 1;
+    setCaptchaNum1(n1);
+    setCaptchaNum2(n2);
+  }, []);
 
   // Sync when initial props change from Calculator
   useEffect(() => {
@@ -108,6 +128,14 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
       errs.loanTenure = 'Thời hạn vay tối thiểu là 3 tháng';
     }
 
+    // Xác thực phép tính chống Spam
+    const expected = captchaNum1 + captchaNum2;
+    if (!captchaAnswer.trim()) {
+      errs.captcha = 'Vui lòng điền kết quả phép tính chống spam';
+    } else if (parseInt(captchaAnswer.trim(), 10) !== expected) {
+      errs.captcha = `Kết quả chưa chính xác (${captchaNum1} + ${captchaNum2} = ?). Vui lòng tính lại.`;
+    }
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -159,10 +187,17 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
       // Safe fallback
     }
 
-    // Save persistently to server database and trigger automated email notification
+    // Save persistently to server database with anti-spam security payload
     let finalLead = newLead;
     try {
-      const saveRes = await submitLead(newLead);
+      const saveRes = await submitLead(newLead, {
+        securityToken,
+        clientTs,
+        hp_website: hpWebsite,
+        captchaAnswer: parseInt(captchaAnswer.trim(), 10),
+        captchaExpected: captchaNum1 + captchaNum2,
+      });
+
       if (saveRes && saveRes.lead) {
         finalLead = saveRes.lead;
       }
@@ -170,29 +205,11 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
       if (saveRes?.emailResult?.success) {
         setEmailStatus('Đã gửi thông báo hồ sơ thành công tới Gmail phamduchai6991@gmail.com');
       } else {
-        // Fallback email dispatch directly
-        try {
-          const emailRes = await sendLeadEmailNotification(newLead);
-          if (emailRes.success) {
-            setEmailStatus(`Đã gửi thông báo tới ${emailRes.targetEmail}`);
-          } else {
-            setEmailStatus('Đã ghi nhận hồ sơ vào hệ thống quản trị');
-          }
-        } catch {
-          setEmailStatus('Đã ghi nhận hồ sơ vào hệ thống quản trị');
-        }
+        setEmailStatus('Đã ghi nhận hồ sơ vào hệ thống quản trị');
       }
     } catch (err) {
       console.error('Submit lead error:', err);
-      // Fallback email dispatch directly
-      try {
-        const emailRes = await sendLeadEmailNotification(newLead);
-        if (emailRes.success) {
-          setEmailStatus(`Đã gửi thông báo tới ${emailRes.targetEmail}`);
-        }
-      } catch {
-        // Fallback
-      }
+      setEmailStatus('Đã ghi nhận hồ sơ vào hệ thống quản trị');
     }
 
     setIsSubmitting(false);
@@ -206,7 +223,14 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
     setFullName('');
     setPhone('');
     setNote('');
+    setHpWebsite('');
+    setCaptchaAnswer('');
     setErrors({});
+    const sec = generateClientSecurityToken();
+    setSecurityToken(sec.token);
+    setClientTs(sec.ts);
+    setCaptchaNum1(Math.floor(Math.random() * 6) + 2);
+    setCaptchaNum2(Math.floor(Math.random() * 5) + 1);
   };
 
   return (
@@ -583,6 +607,54 @@ export const LeadCaptureForm: React.FC<LeadCaptureFormProps> = ({
                       onChange={(e) => setNote(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 bg-slate-50/50 focus:bg-white focus:outline-hidden focus:border-emerald-600"
                     />
+                  </div>
+
+                  {/* Invisible Honeypot Trap for Spam Bots */}
+                  <div style={{ display: 'none', position: 'absolute', opacity: 0, pointerEvents: 'none' }} aria-hidden="true">
+                    <label htmlFor="hp_company_website">Website công ty (bỏ trống nếu là người thật)</label>
+                    <input
+                      id="hp_company_website"
+                      type="text"
+                      name="hp_company_website"
+                      value={hpWebsite}
+                      onChange={(e) => setHpWebsite(e.target.value)}
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {/* Friendly Anti-Spam Human Verification Box */}
+                  <div className="bg-emerald-50/90 border border-emerald-200 rounded-xl p-3 sm:p-3.5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        Xác nhận bạn là người thật (Chống Spam):
+                      </span>
+                      <span className="bg-white px-2.5 py-0.5 rounded-md font-mono font-black text-emerald-800 text-sm border border-emerald-200 shadow-2xs">
+                        {captchaNum1} + {captchaNum2} = ?
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        placeholder="Nhập kết quả phép tính vào đây..."
+                        value={captchaAnswer}
+                        onChange={(e) => {
+                          setCaptchaAnswer(e.target.value);
+                          if (errors.captcha) {
+                            setErrors((prev) => ({ ...prev, captcha: '' }));
+                          }
+                        }}
+                        className={`w-full px-3.5 py-2 text-xs sm:text-sm rounded-lg border bg-white font-bold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 ${
+                          errors.captcha ? 'border-rose-400 bg-rose-50/30' : 'border-emerald-300'
+                        }`}
+                      />
+                    </div>
+                    {errors.captcha && (
+                      <p className="text-rose-600 text-xs font-semibold flex items-center gap-1">
+                        <span>⚠</span> {errors.captcha}
+                      </p>
+                    )}
                   </div>
 
                   {/* Submit Button */}

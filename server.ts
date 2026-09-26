@@ -459,9 +459,44 @@ app.get('/api/leads', (req, res) => {
 
 // 3. Create new lead (Saves permanently to server + Sends Email with AWAIT)
 const recentServerSubmissions = new Map<string, number>();
+const SECRET_SALT = 'VAY365_SECURITY_TOKEN_SALT_2026_LEAD_DEFENSE';
+
+function verifyServerSecurityToken(token: string | undefined, clientTs: number | undefined): boolean {
+  if (!token || !clientTs) return false;
+  const now = Date.now();
+  if (now - clientTs < 2500) return false;
+  if (now - clientTs > 3 * 3600 * 1000) return false;
+
+  const str = `${clientTs}:${SECRET_SALT}:${Math.floor(clientTs / 3600000)}`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const expectedToken = `SEC-${Math.abs(hash).toString(36)}-${clientTs.toString(36)}`;
+  return token === expectedToken;
+}
 
 app.post('/api/leads', async (req, res) => {
-  const leadData = req.body.lead || req.body;
+  const payload = req.body || {};
+  const leadData = payload.lead || payload;
+
+  // 1. Honeypot Trap
+  const honeypotWebsite = payload.hp_website || leadData.hp_website || payload.hp_company;
+  if (honeypotWebsite && String(honeypotWebsite).trim().length > 0) {
+    console.warn('🛡️ Bot trapped in honeypot on server:', honeypotWebsite);
+    return res.status(200).json({ success: true, message: 'Đã nhận hồ sơ' });
+  }
+
+  // 2. Math Captcha verification (if provided)
+  if (payload.captchaExpected !== undefined && payload.captchaAnswer !== undefined) {
+    if (Number(payload.captchaAnswer) !== Number(payload.captchaExpected)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Câu trả lời chống spam không chính xác. Vui lòng kiểm tra lại phép tính.'
+      });
+    }
+  }
 
   if (!leadData || !leadData.fullName || !leadData.phone) {
     return res.status(400).json({ success: false, message: 'Dữ liệu khách hàng không hợp lệ' });

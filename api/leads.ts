@@ -1,6 +1,9 @@
 import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
 
 const DEFAULT_ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL || 'phamduchai6991@gmail.com';
+const SECRET_SALT = 'VAY365_SECURITY_TOKEN_SALT_2026_LEAD_DEFENSE';
 
 const INITIAL_LEADS = [
   {
@@ -55,36 +58,54 @@ const INITIAL_LEADS = [
   }
 ];
 
-// Bộ nhớ đệm chống Spam & chặn Flood request
+let inMemoryLeads: any[] = [...INITIAL_LEADS];
+
+function getStoredLeads(): any[] {
+  const tmpFile = path.join('/tmp', 'leads_db.json');
+  try {
+    if (fs.existsSync(tmpFile)) {
+      const data = fs.readFileSync(tmpFile, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        inMemoryLeads = parsed;
+        return inMemoryLeads;
+      }
+    }
+  } catch {}
+  return inMemoryLeads;
+}
+
+function saveLeadToStorage(newLead: any): any[] {
+  const leads = getStoredLeads();
+  const exists = leads.some((l: any) => l.id === newLead.id || (l.phone === newLead.phone && l.createdAt === newLead.createdAt));
+  if (!exists) {
+    leads.unshift(newLead);
+    inMemoryLeads = leads;
+    try {
+      fs.writeFileSync(path.join('/tmp', 'leads_db.json'), JSON.stringify(leads, null, 2), 'utf-8');
+    } catch {}
+  }
+  return leads;
+}
+
+// Chống Spam & Giới hạn tần suất
 const recentSubmissions = new Map<string, number>();
 
 function isSpamOrFlooding(phone: string, ip: string): boolean {
   const now = Date.now();
-  
-  // Dọn dẹp các mục cũ quá 5 phút
   for (const [key, timestamp] of recentSubmissions.entries()) {
-    if (now - timestamp > 5 * 60 * 1000) {
-      recentSubmissions.delete(key);
-    }
+    if (now - timestamp > 5 * 60 * 1000) recentSubmissions.delete(key);
   }
 
-  // 1. Chặn gửi trùng số điện thoại trong vòng 3 phút
   const phoneKey = `phone:${phone}`;
-  if (recentSubmissions.has(phoneKey)) {
-    const lastTime = recentSubmissions.get(phoneKey)!;
-    if (now - lastTime < 3 * 60 * 1000) {
-      return true;
-    }
+  if (recentSubmissions.has(phoneKey) && now - recentSubmissions.get(phoneKey)! < 3 * 60 * 1000) {
+    return true;
   }
 
-  // 2. Chặn cùng 1 IP gửi dồn dập (tối thiểu 15 giây mới được gửi 1 lần)
   if (ip && ip !== 'unknown') {
     const ipKey = `ip:${ip}`;
-    if (recentSubmissions.has(ipKey)) {
-      const lastTime = recentSubmissions.get(ipKey)!;
-      if (now - lastTime < 15 * 1000) {
-        return true;
-      }
+    if (recentSubmissions.has(ipKey) && now - recentSubmissions.get(ipKey)! < 10 * 1000) {
+      return true;
     }
     recentSubmissions.set(ipKey, now);
   }
@@ -93,15 +114,81 @@ function isSpamOrFlooding(phone: string, ip: string): boolean {
   return false;
 }
 
+// Kiểm tra chữ ký bảo mật Client-Server
+function verifySecurityToken(token: string | undefined, clientTs: number | undefined): boolean {
+  if (!token || !clientTs) return false;
+  const now = Date.now();
+  // Khách người thật mất ít nhất 2.5 giây để nhập form
+  if (now - clientTs < 2500) return false;
+  // Token tối đa 3 tiếng
+  if (now - clientTs > 3 * 3600 * 1000) return false;
+
+  const str = `${clientTs}:${SECRET_SALT}:${Math.floor(clientTs / 3600000)}`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  const expectedToken = `SEC-${Math.abs(hash).toString(36)}-${clientTs.toString(36)}`;
+  return token === expectedToken;
+}
+
+function generateExcelCSV(leads: any[]): string {
+  const headers = [
+    'Mã Hồ Sơ',
+    'Thời Gian Gửi',
+    'Họ Và Tên',
+    'Số Điện Thoại',
+    'Số Tiền Vay (VNĐ)',
+    'Kỳ Hạn (Tháng)',
+    'Gói Vay / Mục Đích',
+    'Thu Nhập Hàng Tháng',
+    'Tỉnh / Thành Phố',
+    'Trạng Thái',
+    'Ghi Chú Khách',
+    'Ghi Chú Quản Trị',
+  ];
+
+  const escapeCSV = (val: any) => {
+    if (val === undefined || val === null) return '""';
+    return `"${String(val).replace(/"/g, '""')}"`;
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'new': return 'Chưa gọi (Mới)';
+      case 'contacted': return 'Đã liên hệ tư vấn';
+      case 'approved': return 'Đã duyệt giải ngân';
+      case 'rejected': return 'Từ chối';
+      default: return status || 'Mới';
+    }
+  };
+
+  const rows = leads.map((lead: any) => [
+    escapeCSV(lead.id || ''),
+    escapeCSV(lead.createdAt || ''),
+    escapeCSV(lead.fullName || ''),
+    escapeCSV(`'${lead.phone || ''}`),
+    escapeCSV(new Intl.NumberFormat('vi-VN').format(lead.loanAmount || 0)),
+    escapeCSV(lead.loanTenure || 24),
+    escapeCSV(lead.loanPurposeName || lead.loanPurpose || 'Vay Tín Chấp'),
+    escapeCSV(lead.monthlyIncome ? new Intl.NumberFormat('vi-VN').format(Number(lead.monthlyIncome) || 0) : 'Không khai báo'),
+    escapeCSV(lead.province || 'Chưa cung cấp'),
+    escapeCSV(getStatusText(lead.status)),
+    escapeCSV(lead.notes || lead.note || ''),
+    escapeCSV(lead.adminNote || ''),
+  ]);
+
+  return '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+}
+
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   const url = req.url || '';
 
@@ -117,29 +204,77 @@ export default async function handler(req: any, res: any) {
     });
   }
 
-  // 2. GET leads - Danh sách khách hàng
+  // 2. Xuất file Excel (.csv chuẩn tiếng Việt)
+  if (req.method === 'GET' && (url.includes('export=excel') || url.includes('export=csv') || req.query?.export)) {
+    const leads = getStoredLeads();
+    const csvData = generateExcelCSV(leads);
+    const filename = `Vay365_Danh_Sach_Ho_So_${new Date().toISOString().slice(0, 10)}.csv`;
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    return res.status(200).send(csvData);
+  }
+
+  // 3. Lấy danh sách hồ sơ JSON
   if (req.method === 'GET') {
+    const leads = getStoredLeads();
     return res.status(200).json({
       success: true,
-      leads: INITIAL_LEADS,
+      total: leads.length,
+      leads,
       message: 'Danh sách hồ sơ khách hàng Vay365'
     });
   }
 
-  // 3. POST new lead - Khi khách gửi đơn
+  // 4. TIẾP NHẬN HỒ SƠ KHÁCH HÀNG (KÈM BỘ 3 TẦNG BẢO VỆ CHỐNG BOT SPAM)
   if (req.method === 'POST') {
-    let leadData = req.body?.lead || req.body;
-    if (typeof leadData === 'string') {
-      try { leadData = JSON.parse(leadData); } catch {}
+    let payload = req.body || {};
+    if (typeof payload === 'string') {
+      try { payload = JSON.parse(payload); } catch {}
     }
 
+    const leadData = payload?.lead || payload;
+
+    // --- TẦNG 1: BẪY BOT TÀNG HÌNH (HONEYPOT) ---
+    // Bot đọc mã nguồn HTML sẽ tự động điền các ô ẩn này. Người thật không nhìn thấy.
+    const honeypotWebsite = payload.hp_website || payload.hp_company || leadData?.hp_company_website || leadData?.hp_website;
+    if (honeypotWebsite && String(honeypotWebsite).trim().length > 0) {
+      console.warn('🛡️ Bot trapped in honeypot:', honeypotWebsite);
+      // Trả về thành công giả để bot không thử lại, nhưng KHÔNG gửi mail và KHÔNG lưu database
+      return res.status(200).json({ success: true, message: 'Đã nhận hồ sơ' });
+    }
+
+    // --- TẦNG 2: XÁC THỰC MÃ BẢO MẬT CLIENT SIGNATURE ---
+    const securityToken = payload.securityToken || leadData.securityToken;
+    const clientTs = Number(payload.clientTs || leadData.clientTs || 0);
+    const isVerifiedClient = verifySecurityToken(securityToken, clientTs);
+
+    if (!isVerifiedClient) {
+      console.warn('🛡️ Bot or direct curl request blocked due to invalid/missing security token');
+      return res.status(403).json({
+        success: false,
+        message: 'Yêu cầu không hợp lệ hoặc đã hết hạn phiên làm việc. Vui lòng tải lại trang và thử lại.',
+      });
+    }
+
+    // --- TẦNG 3: XÁC THỰC PHÉP TÍNH CHỐNG SPAM (CAPTCHA) ---
+    const captchaExpected = payload.captchaExpected ?? leadData.captchaExpected;
+    const captchaAnswer = payload.captchaAnswer ?? leadData.captchaAnswer;
+    if (captchaExpected !== undefined && captchaAnswer !== undefined) {
+      if (Number(captchaAnswer) !== Number(captchaExpected)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Câu trả lời chống spam không chính xác. Vui lòng kiểm tra lại phép tính.'
+        });
+      }
+    }
+
+    // Kiểm tra dữ liệu cơ bản
     if (!leadData || !leadData.fullName || !leadData.phone) {
       return res.status(400).json({ success: false, message: 'Dữ liệu khách hàng không hợp lệ' });
     }
 
     const cleanPhone = String(leadData.phone || '').replace(/\D/g, '');
-    
-    // Kiểm tra số điện thoại chuẩn Việt Nam (10 số, đầu 03, 05, 07, 08, 09)
     const vnPhoneRegex = /^(03|05|07|08|09)\d{8}$/;
     if (!vnPhoneRegex.test(cleanPhone)) {
       return res.status(400).json({ 
@@ -149,8 +284,6 @@ export default async function handler(req: any, res: any) {
     }
 
     const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
-    
-    // Kiểm tra chặn Spam / Flood
     if (isSpamOrFlooding(cleanPhone, String(clientIp))) {
       return res.status(429).json({
         success: false,
@@ -165,6 +298,10 @@ export default async function handler(req: any, res: any) {
       status: 'new',
     };
 
+    // Lưu vào Backend để sẵn sàng xuất Excel
+    saveLeadToStorage(newLead);
+
+    // Gửi email về Gmail (chỉ khi vượt qua toàn bộ 3 tầng bảo mật)
     const formattedAmount = new Intl.NumberFormat('vi-VN').format(newLead.loanAmount || 0);
     const smtpUser = process.env.SMTP_USER;
     const smtpPass = process.env.SMTP_PASS;

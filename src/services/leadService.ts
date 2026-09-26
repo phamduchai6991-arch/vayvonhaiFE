@@ -38,12 +38,24 @@ export async function fetchAllLeads(): Promise<Lead[]> {
 /**
  * Save new lead to backend database and trigger email notification
  */
-export async function submitLead(lead: Lead): Promise<{ success: boolean; lead: Lead; emailResult?: any }> {
+export async function submitLead(
+  lead: Lead,
+  securityData?: {
+    securityToken?: string;
+    clientTs?: number;
+    hp_website?: string;
+    captchaAnswer?: number;
+    captchaExpected?: number;
+  }
+): Promise<{ success: boolean; lead: Lead; emailResult?: any; message?: string }> {
   try {
     const res = await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lead }),
+      body: JSON.stringify({
+        lead,
+        ...(securityData || {}),
+      }),
     });
 
     if (res.ok) {
@@ -52,6 +64,9 @@ export async function submitLead(lead: Lead): Promise<{ success: boolean; lead: 
         updateLocalLeadsCache(data.lead);
         return { success: true, lead: data.lead, emailResult: data.emailResult };
       }
+    } else {
+      const data = await res.json().catch(() => ({}));
+      return { success: false, lead, message: data.message || 'Lỗi gửi hồ sơ' };
     }
   } catch (err) {
     console.warn('Server save lead error, persisting locally:', err);
