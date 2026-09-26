@@ -355,8 +355,23 @@ export const AdminAnalyticsTab: React.FC<AdminAnalyticsTabProps> = ({ leadsCount
           </div>
 
           {/* Test Status Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
             
+            {/* Google Search Console Check */}
+            <div className="bg-white p-4 rounded-2xl border border-emerald-200 bg-emerald-50/20 shadow-xs space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-500">
+                <span className="font-bold text-emerald-950">Google Search Console</span>
+                <span className="text-[10px] font-mono bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">GSC Verified</span>
+              </div>
+              <div className="text-sm font-bold text-emerald-800 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Đã Nhúng Mã Xác Minh</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-tight">
+                Mã: <code className="font-mono text-[10px] text-emerald-700 bg-slate-100 px-1 py-0.5 rounded">XXzCdz4...5j0s</code> sẵn sàng kích hoạt trong Google Search Console.
+              </p>
+            </div>
+
             {/* Sitemap Check */}
             <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-2">
               <div className="flex items-center justify-between text-xs text-slate-500">
