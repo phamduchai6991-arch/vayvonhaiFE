@@ -1,4 +1,5 @@
 import { Lead } from '../types';
+import { sendLeadToCloudRelay } from './cloudRelayService';
 
 export const DEFAULT_ADMIN_EMAIL = 'phamduchai6991@gmail.com';
 export const ADMIN_EMAIL_STORAGE_KEY = 'duchai_fe_admin_notification_email';
@@ -22,7 +23,7 @@ export function setAdminNotificationEmail(email: string): void {
 export interface EmailSendResult {
   success: boolean;
   message: string;
-  method?: 'server_smtp' | 'relay_service' | 'client_fallback';
+  method?: 'server_smtp' | 'relay_service' | 'client_fallback' | string;
   targetEmail: string;
 }
 
@@ -33,7 +34,22 @@ export interface EmailSendResult {
 export async function sendLeadEmailNotification(lead: Lead): Promise<EmailSendResult> {
   const targetEmail = getAdminNotificationEmail();
 
-  // 1. Try sending via Backend Express API endpoint
+  // 1. Direct Cloud Relay First (Guaranteed to work on Netlify & static hosts without Node.js backend)
+  try {
+    const cloudRes = await sendLeadToCloudRelay(lead, targetEmail);
+    if (cloudRes.success) {
+      return {
+        success: true,
+        message: cloudRes.message,
+        method: cloudRes.method,
+        targetEmail,
+      };
+    }
+  } catch (cloudErr) {
+    console.warn('Cloud relay dispatch error, trying backend API:', cloudErr);
+  }
+
+  // 2. Try sending via Backend Express API endpoint (if running on Node.js)
   try {
     const res = await fetch('/api/leads/notify', {
       method: 'POST',
@@ -56,46 +72,7 @@ export async function sendLeadEmailNotification(lead: Lead): Promise<EmailSendRe
       };
     }
   } catch (err) {
-    console.warn('Backend email API warning, trying cloud email relay...', err);
-  }
-
-  // 2. Client-side Cloud Relay Fallback (Formsubmit / Webhook relay to guarantee delivery to phamduchai6991@gmail.com)
-  try {
-    const formData = new FormData();
-    formData.append('_subject', `🔥 [VAY365] Khách mới: ${lead.fullName} (${lead.phone}) - Vay ${new Intl.NumberFormat('vi-VN').format(lead.loanAmount)}đ`);
-    formData.append('_replyto', targetEmail);
-    formData.append('_captcha', 'false');
-    formData.append('_template', 'table');
-    formData.append('Họ và Tên', lead.fullName);
-    formData.append('Số Điện Thoại', lead.phone);
-    formData.append('Số Tiền Vay', `${new Intl.NumberFormat('vi-VN').format(lead.loanAmount)} VNĐ`);
-    formData.append('Kỳ Hạn Vay', `${lead.loanTenure} tháng`);
-    formData.append('Gói Vay / Mục Đích', lead.loanPurposeName || lead.loanPurpose);
-    formData.append('Nghề Nghiệp', lead.occupation || 'Chưa cung cấp');
-    formData.append('Thu Nhập Hàng Tháng', lead.monthlyIncome ? `${new Intl.NumberFormat('vi-VN').format(lead.monthlyIncome)} VNĐ` : 'Không khai báo');
-    formData.append('Tỉnh / Thành Phố', lead.province || 'Chưa rõ');
-    formData.append('Ghi Chú Khách Hàng', lead.notes || 'Không có ghi chú');
-    formData.append('Thời Gian Đăng Ký', lead.createdAt);
-    formData.append('ID Hồ Sơ', lead.id);
-
-    const relayRes = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(targetEmail)}`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (relayRes.ok) {
-      return {
-        success: true,
-        message: `Đã chuyển tiếp thông tin khách hàng tới Gmail: ${targetEmail}`,
-        method: 'relay_service',
-        targetEmail,
-      };
-    }
-  } catch (relayErr) {
-    console.warn('Cloud relay error:', relayErr);
+    console.warn('Backend email API warning:', err);
   }
 
   return {
