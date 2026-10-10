@@ -1,5 +1,7 @@
 import { Lead, LeadStatus } from '../types';
 import { INITIAL_LEADS } from '../data/constants';
+import { sendLeadEmailNotification } from './emailService';
+import { pushLeadToGoogleSheets } from './sheetsService';
 
 const LOCAL_STORAGE_KEY = 'duchai_fe_customer_leads';
 
@@ -48,6 +50,22 @@ export async function submitLead(
     captchaExpected?: number;
   }
 ): Promise<{ success: boolean; lead: Lead; emailResult?: any; message?: string }> {
+  // 1. Always trigger Email Notification to Admin via Cloud Relay
+  let emailResult: any = null;
+  try {
+    emailResult = await sendLeadEmailNotification(lead);
+  } catch (emailErr) {
+    console.warn('Direct lead email notification warning:', emailErr);
+  }
+
+  // 2. Always trigger Google Sheets sync if configured
+  try {
+    await pushLeadToGoogleSheets(lead);
+  } catch (sheetsErr) {
+    console.warn('Direct Google Sheets sync warning:', sheetsErr);
+  }
+
+  // 3. Try server API if available (Node.js runtime)
   try {
     const res = await fetch('/api/leads', {
       method: 'POST',
@@ -62,19 +80,16 @@ export async function submitLead(
       const data = await res.json();
       if (data.lead) {
         updateLocalLeadsCache(data.lead);
-        return { success: true, lead: data.lead, emailResult: data.emailResult };
+        return { success: true, lead: data.lead, emailResult: data.emailResult || emailResult };
       }
-    } else {
-      const data = await res.json().catch(() => ({}));
-      return { success: false, lead, message: data.message || 'Lỗi gửi hồ sơ' };
     }
   } catch (err) {
     console.warn('Server save lead error, persisting locally:', err);
   }
 
-  // Local fallback
+  // 4. Update local cache (guarantees lead stays in user browser and admin local storage)
   updateLocalLeadsCache(lead);
-  return { success: true, lead };
+  return { success: true, lead, emailResult };
 }
 
 /**

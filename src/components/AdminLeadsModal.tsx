@@ -39,6 +39,11 @@ import {
   copyLeadsTable,
   verifySmtpConnection
 } from '../services/leadService';
+import {
+  getGoogleSheetsWebhookUrl,
+  setGoogleSheetsWebhookUrl,
+  pushLeadToGoogleSheets
+} from '../services/sheetsService';
 
 interface AdminLeadsModalProps {
   isOpen: boolean;
@@ -87,6 +92,38 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
   const [showGmailHelp, setShowGmailHelp] = useState(false);
   const [emailFeedback, setEmailFeedback] = useState<{ msg: string; isError?: boolean } | null>(null);
   const [resendingLeadId, setResendingLeadId] = useState<string | null>(null);
+
+  // Google Sheets state
+  const [sheetsWebhookUrl, setSheetsWebhookUrlState] = useState<string>(getGoogleSheetsWebhookUrl());
+  const [isEditingSheetsUrl, setIsEditingSheetsUrl] = useState(false);
+  const [sheetsUrlInput, setSheetsUrlInput] = useState(sheetsWebhookUrl);
+  const [isSyncingAllToSheets, setIsSyncingAllToSheets] = useState(false);
+  const [showSheetsHelp, setShowSheetsHelp] = useState(false);
+
+  const handleSaveSheetsWebhook = () => {
+    setGoogleSheetsWebhookUrl(sheetsUrlInput.trim());
+    setSheetsWebhookUrlState(sheetsUrlInput.trim());
+    setIsEditingSheetsUrl(false);
+    setEmailFeedback({ msg: 'Đã lưu cấu hình Google Sheets Webhook' });
+    setTimeout(() => setEmailFeedback(null), 4000);
+  };
+
+  const handleSyncAllToSheets = async () => {
+    if (!sheetsWebhookUrl) {
+      setIsEditingSheetsUrl(true);
+      setShowSheetsHelp(true);
+      return;
+    }
+    setIsSyncingAllToSheets(true);
+    let count = 0;
+    for (const lead of leads) {
+      const res = await pushLeadToGoogleSheets(lead, sheetsWebhookUrl);
+      if (res.success) count++;
+    }
+    setIsSyncingAllToSheets(false);
+    setEmailFeedback({ msg: `Đã đồng bộ ${count}/${leads.length} hồ sơ vào Google Sheets` });
+    setTimeout(() => setEmailFeedback(null), 5000);
+  };
 
   const handleCheckSmtpStatus = async () => {
     setIsCheckingSmtp(true);
@@ -487,8 +524,65 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                     {copiedTableFeedback ? <Check className="w-3 h-3 text-amber-300" /> : <Copy className="w-3 h-3" />}
                     <span>{copiedTableFeedback ? 'Đã sao chép bảng!' : 'Sao Chép Bảng'}</span>
                   </button>
+
+                  <button
+                    onClick={() => setShowSheetsHelp(!showSheetsHelp)}
+                    className="bg-emerald-700 hover:bg-emerald-600 text-emerald-100 border border-emerald-500/50 px-2.5 py-1 rounded-md font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    title="Đồng bộ tự động hồ sơ vào Google Sheets / Excel Online"
+                  >
+                    <span>📊 Kết Nối Google Sheets</span>
+                  </button>
                 </div>
               </div>
+
+              {/* Collapsible Google Sheets Guidance Box */}
+              {showSheetsHelp && (
+                <div className="bg-emerald-900 text-emerald-100 border-b border-emerald-700 px-6 py-4 text-xs space-y-3 animate-in fade-in duration-200">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="font-bold text-sm text-white flex items-center gap-2">
+                      <span>🔗 Tự Động Nhảy Lead Vào Google Sheets / Excel Online</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-400 text-slate-950 font-black">
+                        Không sợ mất lead khi đổi host
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setShowSheetsHelp(false)}
+                      className="text-emerald-300 hover:text-white text-xs underline cursor-pointer"
+                    >
+                      Đóng
+                    </button>
+                  </div>
+
+                  <p className="text-emerald-200 leading-relaxed">
+                    Khi khách gửi form trên <strong>vay365.com</strong>, hồ sơ sẽ được tự động bắn thẳng vào Google Sheets trên Google Drive của anh.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                    <input
+                      type="url"
+                      value={sheetsUrlInput}
+                      onChange={(e) => setSheetsUrlInput(e.target.value)}
+                      placeholder="Dán đường link Google Apps Script Webhook URL tại đây (https://script.google.com/macros/s/.../exec)"
+                      className="flex-1 bg-slate-950 border border-emerald-500 rounded-lg px-3 py-2 text-xs text-white font-mono placeholder:text-slate-500"
+                    />
+                    <button
+                      onClick={handleSaveSheetsWebhook}
+                      className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg text-xs cursor-pointer shrink-0"
+                    >
+                      Lưu Webhook
+                    </button>
+                    {sheetsWebhookUrl && (
+                      <button
+                        onClick={handleSyncAllToSheets}
+                        disabled={isSyncingAllToSheets}
+                        className="px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-lg text-xs cursor-pointer shrink-0 disabled:opacity-50"
+                      >
+                        {isSyncingAllToSheets ? 'Đang đồng bộ...' : 'Đẩy tất cả Lead hiện có'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Collapsible Gmail Guidance Box */}
               {showGmailHelp && (
