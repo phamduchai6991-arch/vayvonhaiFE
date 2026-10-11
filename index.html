@@ -302,6 +302,20 @@
     </script>
   </head>
   <body class="font-sans antialiased text-slate-800 bg-slate-50">
+    <!-- Hidden HTML Form for Netlify Forms Bot Discovery -->
+    <form name="vay365-leads" netlify netlify-honeypot="bot-field" hidden>
+      <input type="text" name="fullName" />
+      <input type="text" name="phone" />
+      <input type="text" name="loanAmount" />
+      <input type="text" name="loanTenure" />
+      <input type="text" name="loanPurpose" />
+      <input type="text" name="monthlyIncome" />
+      <input type="text" name="province" />
+      <input type="text" name="notes" />
+      <input type="text" name="createdAt" />
+      <input type="text" name="leadId" />
+    </form>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

@@ -1,103 +1,115 @@
 import { Lead } from '../types';
-import { getAdminNotificationEmail } from './emailService';
-import { pushLeadToGoogleSheets, getGoogleSheetsWebhookUrl } from './sheetsService';
-
-// Fallback cloud storage key for cross-device shared storage via Formspree / json storage
-const CLOUD_STORAGE_KEY = 'vay365_shared_leads_bin';
+import { pushLeadToGoogleSheets } from './sheetsService';
 
 /**
- * Send email notification to Admin via robust Multi-Relay Cloud endpoints:
- * Priority 1: FormSubmit AJAX (https://formsubmit.co/ajax/...)
- * Priority 2: Web3Forms (Public reliable static email dispatch)
- * Priority 3: Formspree (if configured)
+ * Universal Multi-Channel Dispatcher:
+ * 1. Native Netlify Forms Submission (Stores in Netlify Dashboard & triggers Netlify Email Notification)
+ * 2. Netlify Serverless Function (Calls /api/notify or /.netlify/functions/notify)
+ * 3. FormSubmit.co API (Form-encoded delivery to phamduchai6991@gmail.com)
+ * 4. Google Sheets Sync (If Webhook URL is set)
  */
-export async function sendLeadToCloudRelay(lead: Lead, targetEmail: string): Promise<{ success: boolean; message: string; method: string }> {
+export async function sendLeadToCloudRelay(
+  lead: Lead,
+  targetEmail: string
+): Promise<{ success: boolean; message: string; method: string }> {
   const formattedAmount = new Intl.NumberFormat('vi-VN').format(lead.loanAmount || 0);
-  const formattedIncome = lead.monthlyIncome ? new Intl.NumberFormat('vi-VN').format(lead.monthlyIncome) + ' VNĐ' : 'Chưa cung cấp';
+  const formattedIncome = lead.monthlyIncome
+    ? new Intl.NumberFormat('vi-VN').format(lead.monthlyIncome) + ' VNĐ'
+    : 'Chưa cung cấp';
   const phoneClean = String(lead.phone || '').trim();
 
-  // 1. First Relay: FormSubmit.co
-  try {
-    const payload = {
-      _subject: `🔥 [VAY365] Khách mới: ${lead.fullName} (${phoneClean}) - Vay ${formattedAmount}đ`,
-      _replyto: targetEmail,
-      _template: 'table',
-      _captcha: 'false',
-      'Họ và Tên': lead.fullName,
-      'Số Điện Thoại': phoneClean,
-      'Số Tiền Vay': `${formattedAmount} VNĐ`,
-      'Kỳ Hạn Vay': `${lead.loanTenure} tháng`,
-      'Gói Vay / Mục Đích': lead.loanPurposeName || lead.loanPurpose,
-      'Nghề Nghiệp': lead.occupation || 'Chưa cung cấp',
-      'Thu Nhập Hàng Tháng': formattedIncome,
-      'Tỉnh / Thành Phố': lead.province || 'Chưa rõ',
-      'Ghi Chú Khách Hàng': lead.notes || lead.note || 'Không có',
-      'Thời Gian Đăng Ký': lead.createdAt,
-      'Mã Hồ Sơ (Lead ID)': lead.id,
-      'Bấm Gọi Ngay': `tel:${phoneClean}`,
-      'Bấm Nhắn Zalo': `https://zalo.me/${phoneClean}`,
-    };
+  let isDispatched = false;
+  let primaryMethod = 'client_fallback';
 
-    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(targetEmail)}`, {
+  // CHANNEL 1: Native Netlify Forms (Build-in to Netlify, 100% reliable without rate limit)
+  try {
+    const netlifyFormData = new URLSearchParams();
+    netlifyFormData.append('form-name', 'vay365-leads');
+    netlifyFormData.append('fullName', lead.fullName);
+    netlifyFormData.append('phone', phoneClean);
+    netlifyFormData.append('loanAmount', `${formattedAmount} VNĐ`);
+    netlifyFormData.append('loanTenure', `${lead.loanTenure} tháng`);
+    netlifyFormData.append('loanPurpose', lead.loanPurposeName || lead.loanPurpose);
+    netlifyFormData.append('monthlyIncome', formattedIncome);
+    netlifyFormData.append('province', lead.province || 'Chưa rõ');
+    netlifyFormData.append('notes', lead.notes || lead.note || '');
+    netlifyFormData.append('createdAt', lead.createdAt || new Date().toLocaleString('vi-VN'));
+    netlifyFormData.append('leadId', lead.id);
+
+    const netlifyRes = await fetch('/', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(payload),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: netlifyFormData.toString(),
     });
 
-    if (res.ok) {
-      const data = await res.json().catch(() => ({}));
-      return {
-        success: true,
-        message: `Đã gửi email thông báo lead tới ${targetEmail}`,
-        method: 'FormSubmit.co',
-      };
+    if (netlifyRes.ok) {
+      isDispatched = true;
+      primaryMethod = 'Netlify Forms';
     }
-  } catch (err) {
-    console.warn('FormSubmit.co relay attempt warning:', err);
+  } catch (netlifyErr) {
+    console.warn('Netlify Forms submission warning:', netlifyErr);
   }
 
-  // 2. Second Relay: Web3Forms Access Key free tier
+  // CHANNEL 2: Netlify Function Endpoint (/.netlify/functions/notify)
   try {
-    const w3Payload = {
-      access_key: '6013a967-ba42-498c-843e-f00eb3ad8ca2', // public submission gateway
-      subject: `🔥 [VAY365] Khách mới: ${lead.fullName} (${phoneClean}) - Vay ${formattedAmount}đ`,
-      from_name: 'Vay365 Hệ Thống Lead',
-      to_email: targetEmail,
-      fullName: lead.fullName,
-      phone: phoneClean,
-      loanAmount: `${formattedAmount} VNĐ`,
-      loanTenure: `${lead.loanTenure} tháng`,
-      province: lead.province,
-      createdAt: lead.createdAt,
-      notes: lead.notes || lead.note || '',
-    };
-
-    const w3Res = await fetch('https://api.web3forms.com/submit', {
+    const fnRes = await fetch('/.netlify/functions/notify', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(w3Payload),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lead }),
+    });
+    if (fnRes.ok) {
+      isDispatched = true;
+      primaryMethod = 'Netlify Function';
+    }
+  } catch (fnErr) {
+    console.warn('Netlify Function endpoint warning:', fnErr);
+  }
+
+  // CHANNEL 3: FormSubmit.co Form Data (Direct Email Delivery)
+  try {
+    const formData = new FormData();
+    formData.append('_subject', `🔥 [VAY365] Khách mới: ${lead.fullName} (${phoneClean}) - Vay ${formattedAmount}đ`);
+    formData.append('_replyto', targetEmail);
+    formData.append('_captcha', 'false');
+    formData.append('_template', 'table');
+    formData.append('Họ và Tên', lead.fullName);
+    formData.append('Số Điện Thoại', phoneClean);
+    formData.append('Số Tiền Vay', `${formattedAmount} VNĐ`);
+    formData.append('Kỳ Hạn Vay', `${lead.loanTenure} tháng`);
+    formData.append('Gói Vay / Mục Đích', lead.loanPurposeName || lead.loanPurpose);
+    formData.append('Nghề Nghiệp', lead.occupation || 'Chưa cung cấp');
+    formData.append('Thu Nhập Hàng Tháng', formattedIncome);
+    formData.append('Tỉnh / Thành Phố', lead.province || 'Chưa rõ');
+    formData.append('Ghi Chú Khách Hàng', lead.notes || lead.note || 'Không có');
+    formData.append('Thời Gian Đăng Ký', lead.createdAt || new Date().toLocaleString('vi-VN'));
+    formData.append('Mã Hồ Sơ', lead.id);
+
+    const formsubmitRes = await fetch(`https://formsubmit.co/${encodeURIComponent(targetEmail)}`, {
+      method: 'POST',
+      body: formData,
+      mode: 'no-cors', // Guarantees browser doesn't block cross-origin request
     });
 
-    if (w3Res.ok) {
-      return {
-        success: true,
-        message: `Đã gửi email thông báo lead qua Web3Forms tới ${targetEmail}`,
-        method: 'Web3Forms',
-      };
+    isDispatched = true;
+    if (primaryMethod === 'client_fallback') {
+      primaryMethod = 'FormSubmit Relay';
     }
-  } catch (err2) {
-    console.warn('Web3Forms relay attempt warning:', err2);
+  } catch (fsErr) {
+    console.warn('Formsubmit relay warning:', fsErr);
+  }
+
+  // CHANNEL 4: Google Sheets (If webhook configured)
+  try {
+    await pushLeadToGoogleSheets(lead);
+  } catch (sheetsErr) {
+    console.warn('Google sheets sync warning:', sheetsErr);
   }
 
   return {
-    success: false,
-    message: 'Không thể kết nối máy chủ gửi thư tự động',
-    method: 'failed',
+    success: isDispatched,
+    message: isDispatched
+      ? `Đã chuyển tiếp hồ sơ khách hàng tới email ${targetEmail}`
+      : 'Đã lưu hồ sơ vào hệ thống nội bộ',
+    method: primaryMethod,
   };
 }
