@@ -10,19 +10,24 @@ const LOCAL_STORAGE_KEY = 'duchai_fe_customer_leads';
  * Fallbacks to local storage if network fails.
  */
 export async function fetchAllLeads(): Promise<Lead[]> {
-  try {
-    const res = await fetch('/api/leads');
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.leads)) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.leads));
+  // 1. Try PHP Hosting API (/api/leads.php) or Node API (/api/leads)
+  const endpoints = ['/api/leads.php', '/api/leads'];
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(ep);
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (Array.isArray(data.leads) && data.leads.length > 0) {
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.leads));
+          }
+          return data.leads;
         }
-        return data.leads;
       }
+    } catch {
+      // Continue to next endpoint
     }
-  } catch (err) {
-    console.warn('Cannot fetch leads from server, using local storage cache:', err);
   }
 
   // Fallback to local storage
@@ -65,26 +70,30 @@ export async function submitLead(
     console.warn('Direct Google Sheets sync warning:', sheetsErr);
   }
 
-  // 3. Try server API if available (Node.js runtime)
-  try {
-    const res = await fetch('/api/leads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        lead,
-        ...(securityData || {}),
-      }),
-    });
+  // 3. Try server API if available (PHP Hosting or Node.js runtime)
+  const submitEndpoints = ['/api/leads.php', '/api/leads'];
+  for (const ep of submitEndpoints) {
+    try {
+      const res = await fetch(ep, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lead,
+          ...(securityData || {}),
+        }),
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.lead) {
-        updateLocalLeadsCache(data.lead);
-        return { success: true, lead: data.lead, emailResult: data.emailResult || emailResult };
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
+        const data = await res.json();
+        if (data.lead) {
+          updateLocalLeadsCache(data.lead);
+          return { success: true, lead: data.lead, emailResult: data.emailResult || emailResult };
+        }
       }
+    } catch (err) {
+      // Continue to next endpoint
     }
-  } catch (err) {
-    console.warn('Server save lead error, persisting locally:', err);
   }
 
   // 4. Update local cache (guarantees lead stays in user browser and admin local storage)

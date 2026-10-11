@@ -682,6 +682,18 @@ app.post('/api/admin/reset-otp', async (req, res) => {
   return res.json({ success: true, message: 'Đã phát lệnh gửi OTP' });
 });
 
+// Direct download endpoint for hosting package
+app.get('/download-hosting-zip', (req, res) => {
+  const zipPath = path.join(process.cwd(), 'public', 'vay365_hosting_cpanel.zip');
+  if (fs.existsSync(zipPath)) {
+    res.setHeader('Content-Disposition', 'attachment; filename="vay365_hosting_cpanel.zip"');
+    res.setHeader('Content-Type', 'application/zip');
+    res.download(zipPath, 'vay365_hosting_cpanel.zip');
+  } else {
+    res.status(404).send('File zip chưa sẵn sàng');
+  }
+});
+
 // Vite middleware setup
 async function start() {
   initStorage();

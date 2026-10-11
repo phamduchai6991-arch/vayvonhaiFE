@@ -532,6 +532,16 @@ export const AdminLeadsModal: React.FC<AdminLeadsModalProps> = ({
                   >
                     <span>📊 Kết Nối Google Sheets</span>
                   </button>
+
+                  <a
+                    href="/download-hosting-zip"
+                    download="vay365_hosting_cpanel.zip"
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1 rounded-md text-[11px] flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                    title="Tải gói mã nguồn hoàn chỉnh đã tích hợp backend PHP sẵn sàng giải nén vào cPanel public_html"
+                  >
+                    <Download className="w-3.5 h-3.5 text-slate-950" />
+                    <span>📦 Tải Gói Code Hosting (ZIP)</span>
+                  </a>
                 </div>
               </div>
 
